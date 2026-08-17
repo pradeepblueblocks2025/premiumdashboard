@@ -1,5 +1,6 @@
 import type { DashboardSectionId } from "./dashboardSections";
 import { resolveAuthHeader } from "./auth";
+import { withCustomerId } from "./format";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ?? "http://localhost:5000";
@@ -27,7 +28,8 @@ function resolveToken(token?: string): string {
 
 export async function fetchDashboardSection(
   section: DashboardSectionId,
-  token?: string
+  token?: string,
+  customerId?: string | null
 ): Promise<Record<string, unknown>> {
   const authToken = resolveToken(token);
   const controller = new AbortController();
@@ -35,7 +37,7 @@ export async function fetchDashboardSection(
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}${SECTION_BACKEND_PATH[section]}`,
+      `${API_BASE_URL}${withCustomerId(SECTION_BACKEND_PATH[section], customerId)}`,
       {
         headers: { Authorization: resolveAuthHeader(authToken) },
         cache: "no-store",

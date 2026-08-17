@@ -1,4 +1,4 @@
-import type { PremiumDashboardData, DashboardViewModel } from "./types";
+import type { PremiumDashboardData, DashboardViewModel, FirstLevelCustomer } from "./types";
 import { transformDashboardData } from "./transformers";
 import { decodeJwtEmail, formatMtht } from "./format";
 
@@ -55,9 +55,10 @@ export const SECTION_LABELS: Record<DashboardSectionId, string> = {
 };
 
 export function createInitialDashboardViewModel(
-  token: string
+  token: string,
+  viewingCustomer?: FirstLevelCustomer | null
 ): DashboardViewModel {
-  return transformDashboardData(EMPTY_DASHBOARD_DATA, token);
+  return transformDashboardData(EMPTY_DASHBOARD_DATA, token, viewingCustomer);
 }
 
 export function buildUserProfileFromToken(token: string) {
@@ -137,7 +138,8 @@ export function mergeSectionIntoDashboardData(
 
 export function toViewModel(
   data: PremiumDashboardData,
-  token: string
+  token: string,
+  viewingCustomer?: FirstLevelCustomer | null
 ): DashboardViewModel {
-  return transformDashboardData(data, token);
+  return transformDashboardData(data, token, viewingCustomer);
 }

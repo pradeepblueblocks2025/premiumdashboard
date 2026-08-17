@@ -1,8 +1,13 @@
 "use client";
 
-import type { DashboardViewModel } from "@/lib/types";
-import { fetchBackendJson, getClientAuthToken } from "@/lib/clientApi";
+import type { DashboardViewModel, FirstLevelCustomer } from "@/lib/types";
+import {
+  fetchBackendJson,
+  fetchFirstLevelCustomers,
+  getClientAuthToken,
+} from "@/lib/clientApi";
 import { getStoredToken } from "@/lib/auth";
+import { withCustomerId } from "@/lib/format";
 import {
   createInitialDashboardViewModel,
   DASHBOARD_SECTION_ORDER,
@@ -43,10 +48,11 @@ function DashboardBootScreen({ message }: { message: string }) {
 }
 
 async function fetchSectionClient(
-  section: DashboardSectionId
+  section: DashboardSectionId,
+  customerId?: string | null
 ): Promise<Record<string, unknown>> {
   return fetchBackendJson<Record<string, unknown>>(
-    SECTION_BACKEND_PATH[section]
+    withCustomerId(SECTION_BACKEND_PATH[section], customerId)
   );
 }
 
@@ -65,6 +71,18 @@ export default function DashboardLoader() {
     Partial<Record<DashboardSectionId, string>>
   >({});
   const [authChecked, setAuthChecked] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+    null
+  );
+  const [firstLevelCustomers, setFirstLevelCustomers] = useState<
+    FirstLevelCustomer[]
+  >([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
+  const [customersError, setCustomersError] = useState<string | null>(null);
+
+  const viewingCustomer =
+    firstLevelCustomers.find((c) => c.customerId === selectedCustomerId) ??
+    null;
 
   useEffect(() => {
     const token = getStoredToken();
@@ -85,6 +103,55 @@ export default function DashboardLoader() {
 
     let cancelled = false;
 
+    async function loadCustomers() {
+      setCustomersLoading(true);
+      setCustomersError(null);
+      try {
+        const customers = await fetchFirstLevelCustomers();
+        if (!cancelled) {
+          setFirstLevelCustomers(customers);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Failed to load first-level customers";
+          if (
+            message.toLowerCase().includes("session expired") ||
+            message.includes("(401)") ||
+            message.toLowerCase().includes("not authenticated")
+          ) {
+            if (!authRedirected.current) {
+              authRedirected.current = true;
+              router.replace("/");
+            }
+            return;
+          }
+          setCustomersError(message);
+        }
+      } finally {
+        if (!cancelled) setCustomersLoading(false);
+      }
+    }
+
+    loadCustomers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authChecked, router]);
+
+  useEffect(() => {
+    if (!authChecked) return;
+
+    let cancelled = false;
+    const token = getClientAuthToken();
+
+    setData(createInitialDashboardViewModel(token, viewingCustomer));
+    setLoadingSections(new Set(DASHBOARD_SECTION_ORDER));
+    setSectionErrors({});
+
     async function loadSectionsSequentially() {
       let merged = { ...EMPTY_DASHBOARD_DATA };
       const authToken = getClientAuthToken();
@@ -93,11 +160,11 @@ export default function DashboardLoader() {
         if (cancelled) return;
 
         try {
-          const payload = await fetchSectionClient(section);
+          const payload = await fetchSectionClient(section, selectedCustomerId);
           merged = mergeSectionIntoDashboardData(merged, section, payload);
 
           if (!cancelled) {
-            setData(toViewModel(merged, authToken));
+            setData(toViewModel(merged, authToken, viewingCustomer));
             setLoadingSections((prev) => {
               const next = new Set(prev);
               next.delete(section);
@@ -151,7 +218,7 @@ export default function DashboardLoader() {
     return () => {
       cancelled = true;
     };
-  }, [authChecked, router]);
+  }, [authChecked, router, selectedCustomerId]);
 
   if (!authChecked || !data) {
     return <DashboardBootScreen message="Checking session..." />;
@@ -162,6 +229,11 @@ export default function DashboardLoader() {
       data={data}
       loadingSections={loadingSections}
       sectionErrors={sectionErrors}
+      firstLevelCustomers={firstLevelCustomers}
+      selectedCustomerId={selectedCustomerId}
+      customersLoading={customersLoading}
+      customersError={customersError}
+      onSelectCustomer={setSelectedCustomerId}
     />
   );
 }

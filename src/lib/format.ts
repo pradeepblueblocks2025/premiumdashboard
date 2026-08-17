@@ -28,7 +28,12 @@ export function progressPercent(current: number, target: number): number {
   return Math.min(100, Math.round((current / target) * 100));
 }
 
-export function decodeJwtEmail(token: string): string | null {
+export interface JwtPayload {
+  customerId?: string;
+  emailAddress?: string;
+}
+
+export function decodeJwtPayload(token: string): JwtPayload | null {
   try {
     const payload = token.split(".")[1];
     if (!payload) return null;
@@ -37,9 +42,24 @@ export function decodeJwtEmail(token: string): string | null {
       typeof window !== "undefined"
         ? atob(base64)
         : Buffer.from(payload, "base64url").toString("utf-8");
-    const decoded = JSON.parse(json) as { emailAddress?: string };
-    return decoded.emailAddress ?? null;
+    return JSON.parse(json) as JwtPayload;
   } catch {
     return null;
   }
+}
+
+export function decodeJwtEmail(token: string): string | null {
+  return decodeJwtPayload(token)?.emailAddress ?? null;
+}
+
+export function withCustomerId(
+  path: string,
+  customerId?: string | null
+): string {
+  if (!customerId) return path;
+  const [base, existing] = path.split("?");
+  const search = new URLSearchParams(existing ?? "");
+  search.set("customerId", customerId);
+  const qs = search.toString();
+  return qs ? `${base}?${qs}` : base;
 }

@@ -43,6 +43,7 @@ import type {
   BoosterAchieverData,
   CommunityActivityItem,
   DashboardViewModel,
+  FirstLevelCustomer,
   LegsProgress,
   MetricCardData,
   NftPriceChartData,
@@ -64,9 +65,11 @@ import { formatUsd, progressPercent } from "@/lib/format";
 import { fetchBackendJson } from "@/lib/clientApi";
 import { mergeRankDetail } from "@/lib/api";
 import { clearStoredToken } from "@/lib/auth";
+import { withCustomerId } from "@/lib/format";
 import { useRouter } from "next/navigation";
 import type { DashboardSectionId } from "@/lib/dashboardSections";
 import BrandLogo from "@/components/BrandLogo";
+import CustomerSwitcher from "@/components/CustomerSwitcher";
 
 const metricIcons: Record<string, React.ReactNode> = {
   users: <Users className="w-4 h-4 text-violet-400" />,
@@ -80,7 +83,19 @@ const metricIcons: Record<string, React.ReactNode> = {
   nft: <ImageIcon className="w-4 h-4 text-purple-400" />,
 };
 
-function Header() {
+function Header({
+  customers,
+  selectedCustomerId,
+  customersLoading,
+  customersError,
+  onSelectCustomer,
+}: {
+  customers: FirstLevelCustomer[];
+  selectedCustomerId: string | null;
+  customersLoading: boolean;
+  customersError: string | null;
+  onSelectCustomer: (customerId: string | null) => void;
+}) {
   const router = useRouter();
 
   function handleLogout() {
@@ -89,14 +104,21 @@ function Header() {
   }
 
   return (
-    <header className="flex items-center justify-between px-3 sm:px-4 py-3">
-      <div className="flex items-center gap-2">
+    <header className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3">
+      <div className="flex items-center gap-2 min-w-0">
         <BrandLogo size={32} priority />
-        <span className="font-bold text-white tracking-wide text-sm">
+        <span className="font-bold text-white tracking-wide text-sm truncate">
           FORTUNE NFT
         </span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
+        <CustomerSwitcher
+          customers={customers}
+          selectedCustomerId={selectedCustomerId}
+          loading={customersLoading}
+          error={customersError}
+          onSelect={onSelectCustomer}
+        />
         <button
           type="button"
           onClick={handleLogout}
@@ -139,6 +161,11 @@ function ProfileBanner({ user }: { user: UserProfile }) {
           <h2 className="font-bold text-white text-sm sm:text-base tracking-wide truncate">
             {user.name}
           </h2>
+          {user.viewingDownline && (
+            <p className="text-[10px] text-violet-400 mt-0.5">
+              Viewing first-level customer
+            </p>
+          )}
           <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email}</p>
           <div className="mt-2">
             <div className="flex items-center gap-1.5">
@@ -661,10 +688,12 @@ function RankCriteriaSection({
   rankTabs,
   rankProgress: initialRankProgress,
   error = null,
+  customerId = null,
 }: {
   rankTabs: string[];
   rankProgress?: DashboardViewModel["rankProgress"];
   error?: string | null;
+  customerId?: string | null;
 }) {
   const [rankProgress, setRankProgress] = useState(initialRankProgress);
   const [loadingRank, setLoadingRank] = useState<string | null>(null);
@@ -706,7 +735,10 @@ function RankCriteriaSection({
 
       try {
         const { rank: rankItem } = await fetchBackendJson<{ rank: RankProgressItem }>(
-          `/api/v1/premium-dashboard/rank-progress?rank=${encodeURIComponent(activeTab)}`
+          withCustomerId(
+            `/api/v1/premium-dashboard/rank-progress?rank=${encodeURIComponent(activeTab)}`,
+            customerId
+          )
         );
 
         if (!cancelled) {
@@ -732,7 +764,7 @@ function RankCriteriaSection({
     return () => {
       cancelled = true;
     };
-  }, [activeTab, needsDetail, loadingRank]);
+  }, [activeTab, needsDetail, loadingRank, customerId]);
 
   const showingRankLoader = needsDetail && loadingRank === activeTab;
 
@@ -799,9 +831,11 @@ function RankCriteriaSection({
 function LazyRankProgressPanel({
   rankTabs,
   rankCriteriaSummary,
+  customerId = null,
 }: {
   rankTabs: string[];
   rankCriteriaSummary: RankCriteriaSummaryItem[];
+  customerId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [rankProgress, setRankProgress] = useState<
@@ -820,7 +854,7 @@ function LazyRankProgressPanel({
     try {
       const body = await fetchBackendJson<
         NonNullable<PremiumDashboardData["rankProgress"]>
-      >("/api/v1/premium-dashboard/rank-progress");
+      >(withCustomerId("/api/v1/premium-dashboard/rank-progress", customerId));
 
       setRankProgress(body);
     } catch (err) {
@@ -898,6 +932,7 @@ function LazyRankProgressPanel({
           <RankCriteriaSection
             rankTabs={rankTabs}
             rankProgress={rankProgress}
+            customerId={customerId}
           />
           <div className="mt-3">
             <RankCriteriaSummary rankCriteriaSummary={rankCriteriaSummary} />
@@ -1159,6 +1194,11 @@ interface DashboardProps {
   error?: string;
   loadingSections?: Set<DashboardSectionId>;
   sectionErrors?: Partial<Record<DashboardSectionId, string>>;
+  firstLevelCustomers?: FirstLevelCustomer[];
+  selectedCustomerId?: string | null;
+  customersLoading?: boolean;
+  customersError?: string | null;
+  onSelectCustomer?: (customerId: string | null) => void;
 }
 
 export default function Dashboard({
@@ -1166,6 +1206,11 @@ export default function Dashboard({
   error,
   loadingSections,
   sectionErrors,
+  firstLevelCustomers = [],
+  selectedCustomerId = null,
+  customersLoading = false,
+  customersError = null,
+  onSelectCustomer,
 }: DashboardProps) {
   if (error) return <ErrorState message={error} />;
   if (!data) return <LoadingState />;
@@ -1178,7 +1223,13 @@ export default function Dashboard({
   return (
     <div className="min-h-screen bg-[#070b1a] overflow-x-hidden">
       <div className="max-w-7xl mx-auto pb-6">
-        <Header />
+        <Header
+          customers={firstLevelCustomers}
+          selectedCustomerId={selectedCustomerId}
+          customersLoading={customersLoading}
+          customersError={customersError}
+          onSelectCustomer={onSelectCustomer ?? (() => {})}
+        />
         {anyLoading && (
           <div className="mx-3 sm:mx-4 mb-3 card px-3 py-2 flex items-center gap-2">
             <Loader2 className="w-3.5 h-3.5 text-violet-400 animate-spin flex-shrink-0" />
@@ -1229,8 +1280,10 @@ export default function Dashboard({
           <VolumeLevelsStrip volumeLevels={data.volumeLevels} />
         )}
         <LazyRankProgressPanel
+          key={selectedCustomerId ?? "self"}
           rankTabs={data.rankTabs}
           rankCriteriaSummary={data.rankCriteriaSummary}
+          customerId={selectedCustomerId}
         />
         <BottomGrid
           levelVolumeData={data.levelVolumeData}

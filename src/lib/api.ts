@@ -6,6 +6,7 @@ import type {
 } from "./types";
 import { transformDashboardData } from "./transformers";
 import { resolveAuthHeader } from "./auth";
+import { withCustomerId } from "./format";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ?? "http://localhost:5000";
@@ -38,15 +39,19 @@ async function parseApiError(response: Response): Promise<string> {
 
 async function backendGet<T>(
   path: string,
-  token?: string
+  token?: string,
+  customerId?: string | null
 ): Promise<T> {
   const authToken = resolveToken(token);
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      Authorization: resolveAuthHeader(authToken),
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(
+    `${API_BASE_URL}${withCustomerId(path, customerId)}`,
+    {
+      headers: {
+        Authorization: resolveAuthHeader(authToken),
+      },
+      cache: "no-store",
+    }
+  );
 
   if (!response.ok) {
     throw new Error(await parseApiError(response));
@@ -64,44 +69,52 @@ async function backendGet<T>(
 }
 
 export async function fetchDashboardStats(
-  token?: string
+  token?: string,
+  customerId?: string | null
 ): Promise<DashboardViewModel> {
   const authToken = resolveToken(token);
   const data = await backendGet<PremiumDashboardData>(
     "/api/v1/premium-dashboard/overview?includeRankProgress=0",
-    authToken
+    authToken,
+    customerId
   );
 
   return transformDashboardData(data, authToken);
 }
 
 export async function fetchRankProgress(
-  token?: string
+  token?: string,
+  customerId?: string | null
 ): Promise<NonNullable<PremiumDashboardData["rankProgress"]>> {
   return backendGet<NonNullable<PremiumDashboardData["rankProgress"]>>(
     "/api/v1/premium-dashboard/rank-progress",
-    token
+    token,
+    customerId
   );
 }
 
 export async function fetchRankDetail(
   rank: string,
-  token?: string
+  token?: string,
+  customerId?: string | null
 ): Promise<RankProgressItem> {
   const data = await backendGet<{ rank: RankProgressItem }>(
     `/api/v1/premium-dashboard/rank-progress?rank=${encodeURIComponent(rank)}`,
-    token
+    token,
+    customerId
   );
   return data.rank;
 }
 
 export async function fetchDashboardOverview(
-  token?: string
+  token?: string,
+  customerId?: string | null
 ): Promise<DashboardViewModel> {
   const authToken = resolveToken(token);
   const data = await backendGet<PremiumDashboardData>(
     "/api/v1/premium-dashboard/overview",
-    authToken
+    authToken,
+    customerId
   );
 
   return transformDashboardData(data, authToken);

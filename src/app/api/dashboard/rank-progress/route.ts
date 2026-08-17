@@ -24,13 +24,14 @@ export async function GET(request: NextRequest) {
     }
 
     const rank = request.nextUrl.searchParams.get("rank");
+    const customerId = request.nextUrl.searchParams.get("customerId");
 
     if (rank) {
-      const data = await fetchRankDetail(rank, token);
+      const data = await fetchRankDetail(rank, token, customerId);
       return NextResponse.json(data);
     }
 
-    const data = await fetchRankProgress(token);
+    const data = await fetchRankProgress(token, customerId);
     return NextResponse.json(data);
   } catch (error) {
     const message =

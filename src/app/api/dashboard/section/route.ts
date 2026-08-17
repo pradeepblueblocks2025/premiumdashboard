@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const data = await fetchDashboardSection(section, token);
+    const customerId = request.nextUrl.searchParams.get("customerId");
+    const data = await fetchDashboardSection(section, token, customerId);
     return NextResponse.json(data);
   } catch (error) {
     const message =

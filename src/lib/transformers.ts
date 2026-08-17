@@ -1,5 +1,6 @@
 import type {
   DashboardViewModel,
+  FirstLevelCustomer,
   LegsProgress,
   PremiumDashboardData,
   RankCriteriaSummaryItem,
@@ -60,8 +61,20 @@ const DEFAULT_RANK_CRITERIA_SUMMARY: RankCriteriaSummaryItem[] = [
 ];
 function buildUserProfile(
   data: PremiumDashboardData,
-  token: string
+  token: string,
+  viewingCustomer?: FirstLevelCustomer | null
 ): DashboardViewModel["user"] {
+  if (viewingCustomer) {
+    const seed = viewingCustomer.email || viewingCustomer.customerId;
+    return {
+      name: viewingCustomer.name.toUpperCase(),
+      email: viewingCustomer.email ?? "",
+      balance: formatMtht(data.activeStaking.totalActiveMtht),
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`,
+      viewingDownline: true,
+    };
+  }
+
   const email = decodeJwtEmail(token) ?? "member@fortunenft.io";
   const nameFromEmail = email
     .split("@")[0]
@@ -179,12 +192,13 @@ function buildNftPriceChart(
 
 export function transformDashboardData(
   data: PremiumDashboardData,
-  token: string
+  token: string,
+  viewingCustomer?: FirstLevelCustomer | null
 ): DashboardViewModel {
   const metrics = buildMetrics(data);
 
   return {
-    user: buildUserProfile(data, token),
+    user: buildUserProfile(data, token, viewingCustomer),
     metricsRow1: metrics.row1,
     metricsRow2: metrics.row2,
     rankAchievers: data.rankCounts.map((item, index) => ({

@@ -200,11 +200,19 @@ export interface CommunityActivityItem {
   time: string;
 }
 
+export interface FirstLevelCustomer {
+  customerId: string;
+  name: string;
+  email?: string;
+  rank?: string;
+}
+
 export interface UserProfile {
   name: string;
   email: string;
   balance: string;
   avatar: string;
+  viewingDownline?: boolean;
 }
 
 export interface DashboardViewModel {
