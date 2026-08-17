@@ -3,7 +3,6 @@
 import {
   Bell,
   Menu,
-  Box,
   ArrowDownToLine,
   ArrowUpFromLine,
   Layers,
@@ -67,6 +66,7 @@ import { mergeRankDetail } from "@/lib/api";
 import { clearStoredToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import type { DashboardSectionId } from "@/lib/dashboardSections";
+import BrandLogo from "@/components/BrandLogo";
 
 const metricIcons: Record<string, React.ReactNode> = {
   users: <Users className="w-4 h-4 text-violet-400" />,
@@ -91,9 +91,7 @@ function Header() {
   return (
     <header className="flex items-center justify-between px-3 sm:px-4 py-3">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-          <Box className="w-4 h-4 text-white" />
-        </div>
+        <BrandLogo size={32} priority />
         <span className="font-bold text-white tracking-wide text-sm">
           FORTUNE NFT
         </span>
@@ -1110,9 +1108,7 @@ function Footer() {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
         <div className="text-center sm:text-left">
           <div className="flex items-center gap-2 mb-2 justify-center sm:justify-start">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-              <Box className="w-3.5 h-3.5 text-white" />
-            </div>
+            <BrandLogo size={28} />
             <span className="font-bold text-white text-sm">FORTUNE NFT</span>
           </div>
           <p className="text-[10px] text-slate-500 max-w-xs mx-auto sm:mx-0 leading-relaxed">
