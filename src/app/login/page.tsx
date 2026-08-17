@@ -1,5 +1,5 @@
 import LoginShell from "@/components/LoginShell";
 
-export default function Home() {
+export default function LoginRoutePage() {
   return <LoginShell />;
 }
