@@ -31,11 +31,6 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  LabelList,
 } from "recharts";
 import { useState, useEffect } from "react";
 import type {
@@ -938,53 +933,82 @@ function LazyRankProgressPanel({
   );
 }
 
+const LEVEL_VOLUME_PALETTE = [
+  { from: "#22d3ee", to: "#6366f1" },
+  { from: "#a78bfa", to: "#ec4899" },
+  { from: "#818cf8", to: "#06b6d4" },
+  { from: "#f472b6", to: "#fb923c" },
+  { from: "#34d399", to: "#22d3ee" },
+] as const;
+
 function LevelVolumeChart({
   levelVolumeData,
 }: {
   levelVolumeData: DashboardViewModel["levelVolumeData"];
 }) {
+  const max = Math.max(...levelVolumeData.map((row) => row.value), 1);
+  const total = levelVolumeData.reduce((sum, row) => sum + row.value, 0);
+
   return (
-    <div className="card p-4 flex flex-col h-full">
-      <h3 className="text-xs font-semibold text-slate-300 mb-3">
-        Level Volume Overview
-      </h3>
-      <div className="flex-1 outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:cursor-default">
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart
-            data={levelVolumeData}
-            layout="vertical"
-            margin={{ top: 4, right: 72, left: 0, bottom: 0 }}
-            style={{ outline: "none" }}
-          >
-            <XAxis type="number" hide />
-            <YAxis
-              type="category"
-              dataKey="level"
-              width={50}
-              tick={{ fill: "#64748b", fontSize: 9 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Bar
-              dataKey="value"
-              fill="#8b5cf6"
-              radius={[0, 4, 4, 0]}
-              barSize={14}
-              activeBar={false}
-              cursor="default"
-            >
-              <LabelList
-                dataKey="value"
-                position="right"
-                fill="#e2e8f0"
-                fontSize={10}
-                formatter={(value) =>
-                  typeof value === "number" ? formatUsd(value, true) : ""
-                }
-              />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="card volume-modern-card p-4 flex flex-col h-full">
+      <div className="flex items-baseline justify-between mb-4">
+        <h3 className="text-xs font-semibold text-slate-200">
+          Level Volume Overview
+        </h3>
+        <span className="text-[10px] text-slate-500">
+          Total {formatUsd(total, true)}
+        </span>
+      </div>
+      <div className="flex flex-col gap-3.5">
+        {levelVolumeData.map((row, index) => {
+          const palette =
+            LEVEL_VOLUME_PALETTE[index % LEVEL_VOLUME_PALETTE.length];
+          const width = Math.max(8, (row.value / max) * 100);
+          const share = total > 0 ? Math.round((row.value / total) * 100) : 0;
+          const levelNo = row.level.replace(/\D/g, "") || String(index + 1);
+
+          return (
+            <div key={row.level} className="flex items-center gap-3">
+              <div
+                className="volume-modern-badge shrink-0"
+                style={{
+                  background: `linear-gradient(145deg, ${palette.from}33, ${palette.to}1a)`,
+                  boxShadow: `0 0 14px ${palette.to}33`,
+                }}
+              >
+                L{levelNo}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400">{row.level}</span>
+                  <span className="text-[10px] tabular-nums text-slate-500">
+                    {share}%
+                  </span>
+                </div>
+                <div className="volume-modern-track">
+                  <div
+                    className="volume-modern-fill"
+                    style={{
+                      width: `${width}%`,
+                      background: `linear-gradient(90deg, ${palette.from}, ${palette.to})`,
+                      boxShadow: `0 0 18px ${palette.to}55`,
+                      animationDelay: `${index * 80}ms`,
+                    }}
+                  >
+                    <span className="volume-modern-shine" />
+                    <span
+                      className="volume-modern-pip"
+                      style={{ boxShadow: `0 0 10px ${palette.to}` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <span className="w-[4.5rem] shrink-0 text-right text-[11px] font-semibold tabular-nums text-white">
+                {formatUsd(row.value, true)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

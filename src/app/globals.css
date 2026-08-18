@@ -88,3 +88,92 @@ body {
     transform: scaleY(1);
   }
 }
+
+.volume-modern-card {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(139, 92, 246, 0.12), transparent 50%),
+    radial-gradient(80% 70% at 0% 100%, rgba(6, 182, 212, 0.08), transparent 46%),
+    var(--card);
+}
+
+.volume-modern-badge {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.volume-modern-track {
+  height: 0.7rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+}
+
+.volume-modern-fill {
+  position: relative;
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+  animation: volume-modern-grow 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.volume-modern-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 45%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  animation: volume-modern-shine 2.4s ease-in-out 0.6s infinite;
+  pointer-events: none;
+}
+
+.volume-modern-pip {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #fff;
+  transform: translateY(-50%);
+}
+
+@keyframes volume-modern-grow {
+  from {
+    transform: scaleX(0);
+    opacity: 0.4;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes volume-modern-shine {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .volume-modern-fill,
+  .volume-modern-shine {
+    animation: none;
+  }
+}
