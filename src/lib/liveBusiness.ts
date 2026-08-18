@@ -62,16 +62,25 @@ function formatPointLabel(raw: string): string {
   return raw;
 }
 
+function parseYmd(ymd: string): { y: number; m: number; d: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
+  if (!match) return null;
+  return { y: Number(match[1]), m: Number(match[2]), d: Number(match[3]) };
+}
+
 function eachDay(startYmd: string, endYmd: string): string[] {
-  const start = new Date(`${startYmd}T00:00:00`);
-  const end = new Date(`${endYmd}T00:00:00`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
-    return [];
-  }
+  const start = parseYmd(startYmd);
+  const end = parseYmd(endYmd);
+  if (!start || !end) return [];
+
+  const cursor = new Date(start.y, start.m - 1, start.d);
+  const last = new Date(end.y, end.m - 1, end.d);
+  if (cursor > last) return [];
 
   const days: string[] = [];
-  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+  while (cursor <= last) {
     days.push(formatYmd(cursor));
+    cursor.setDate(cursor.getDate() + 1);
   }
   return days;
 }
@@ -81,19 +90,34 @@ export function calendarMonthRange(now = new Date()): { start: string; end: stri
   return { start: formatYmd(start), end: formatYmd(now) };
 }
 
+export function clipSeriesThroughToday(
+  series: LiveBusinessPoint[],
+  todayYmd = formatYmd(new Date())
+): LiveBusinessPoint[] {
+  return series.filter((point) => {
+    const ymd = toLocalYmd(point.date);
+    return !ymd || ymd <= todayYmd;
+  });
+}
+
 export function fillDailySeries(
   series: LiveBusinessPoint[],
   startYmd: string,
   endYmd: string
 ): LiveBusinessPoint[] {
+  const todayYmd = formatYmd(new Date());
+  const cappedEnd = endYmd > todayYmd ? todayYmd : endYmd;
+
   const byDate = new Map<string, LiveBusinessPoint>();
   for (const point of series) {
     const key = toLocalYmd(point.date) ?? point.date;
-    byDate.set(key, point);
+    if (key <= todayYmd) byDate.set(key, point);
   }
 
-  const days = eachDay(startYmd, endYmd);
-  if (days.length === 0) return series;
+  const days = eachDay(startYmd, cappedEnd);
+  if (days.length === 0) {
+    return clipSeriesThroughToday(series, todayYmd);
+  }
 
   return days.map((date) => {
     const existing = byDate.get(date);

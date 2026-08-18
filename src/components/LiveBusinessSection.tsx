@@ -2,6 +2,7 @@
 
 import {
   calendarMonthRange,
+  clipSeriesThroughToday,
   fetchLiveBusiness,
   fillDailySeries,
 } from "@/lib/liveBusiness";
@@ -147,7 +148,7 @@ export default function LiveBusinessSection({
   const series =
     range === "month" && month
       ? fillDailySeries(month.series, monthBounds.start, monthBounds.end)
-      : (week?.series ?? []);
+      : clipSeriesThroughToday(week?.series ?? []);
   const denseLabels = range === "month";
 
   return (
