@@ -35,7 +35,7 @@ function DayValueLabel({
 }: {
   x?: number | string;
   y?: number | string;
-  value?: number | string;
+  value?: string | number | null;
   index?: number;
   dense?: boolean;
 }) {
@@ -332,7 +332,18 @@ export default function LiveBusinessSection({
                   <LabelList
                     dataKey="mtht"
                     content={(props) => (
-                      <DayValueLabel {...props} dense={denseLabels} />
+                      <DayValueLabel
+                        x={typeof props.x === "number" ? props.x : undefined}
+                        y={typeof props.y === "number" ? props.y : undefined}
+                        value={
+                          typeof props.value === "number" ||
+                          typeof props.value === "string"
+                            ? props.value
+                            : undefined
+                        }
+                        index={props.index}
+                        dense={denseLabels}
+                      />
                     )}
                   />
                 </Line>
