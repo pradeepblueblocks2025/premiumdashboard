@@ -2,14 +2,19 @@
 
 import { fetchLiveBusiness } from "@/lib/liveBusiness";
 import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
+import {
+  playNewBusinessSound,
+  unlockNotificationAudio,
+} from "@/lib/notifySound";
 import type { LiveBusinessData, LiveBusinessRange } from "@/lib/types";
 import { Activity, ImageIcon, Loader2, TrendingUp } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Area,
-  AreaChart,
+  CartesianGrid,
+  LabelList,
+  Line,
+  LineChart,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -21,28 +26,39 @@ const RANGES: Array<{ id: LiveBusinessRange; label: string }> = [
   { id: "month", label: "Month" },
 ];
 
-function ChartTooltip({
-  active,
-  payload,
-  label,
+function DayValueLabel({
+  x,
+  y,
+  value,
+  index,
+  dense,
 }: {
-  active?: boolean;
-  payload?: Array<{ payload: { mtht: number; usdt: number; nftPurchased: number } }>;
-  label?: string;
+  x?: number | string;
+  y?: number | string;
+  value?: number | string;
+  index?: number;
+  dense?: boolean;
 }) {
-  if (!active || !payload?.length) return null;
-  const point = payload[0]?.payload;
-  if (!point) return null;
+  const px = typeof x === "number" ? x : Number(x);
+  const py = typeof y === "number" ? y : Number(y);
+  const amount = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(amount)) {
+    return null;
+  }
+
+  const offset = dense && (index ?? 0) % 2 === 1 ? 16 : -8;
 
   return (
-    <div className="rounded-lg bg-[#0d1228] border border-[#1a2240] px-2.5 py-2 shadow-lg">
-      <p className="text-[10px] text-slate-400 mb-1">{label}</p>
-      <p className="text-xs font-semibold text-white">{formatMtht(point.mtht)}</p>
-      <p className="text-[10px] text-slate-400">{formatUsd(point.usdt)}</p>
-      <p className="text-[10px] text-slate-500">
-        {formatNumber(point.nftPurchased, 0)} NFTs
-      </p>
-    </div>
+    <text
+      x={px}
+      y={py + offset}
+      textAnchor="middle"
+      fill="#ddd6fe"
+      fontSize={dense ? 8 : 10}
+      fontWeight={600}
+    >
+      {formatNumber(amount, 0, true)}
+    </text>
   );
 }
 
@@ -82,6 +98,13 @@ export default function LiveBusinessSection({
   const [month, setMonth] = useState<LiveBusinessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [justNotified, setJustNotified] = useState(false);
+  const previousBusiness = useRef<{
+    customerId: string | null;
+    mtht: number;
+    usdt: number;
+    nft: number;
+  } | null>(null);
 
   const load = useCallback(
     async (silent = false, signal?: { cancelled: boolean }) => {
@@ -97,6 +120,25 @@ export default function LiveBusinessSection({
 
         if (signal?.cancelled) return;
 
+        const next = {
+          customerId,
+          mtht: todayData.summary.totalMtht,
+          usdt: todayData.summary.totalUsdt,
+          nft: todayData.summary.totalNftPurchased,
+        };
+        const prev = previousBusiness.current;
+        const isNewBusiness =
+          !!prev &&
+          prev.customerId === customerId &&
+          (next.nft > prev.nft || next.mtht > prev.mtht || next.usdt > prev.usdt);
+
+        if (isNewBusiness) {
+          void playNewBusinessSound();
+          setJustNotified(true);
+          window.setTimeout(() => setJustNotified(false), 2500);
+        }
+        previousBusiness.current = next;
+
         setToday(todayData);
         setWeek(weekData);
         setMonth(monthData);
@@ -111,6 +153,19 @@ export default function LiveBusinessSection({
     },
     [customerId]
   );
+
+  useEffect(() => {
+    previousBusiness.current = null;
+  }, [customerId]);
+
+  useEffect(() => {
+    const unlock = () => {
+      void unlockNotificationAudio();
+      window.removeEventListener("pointerdown", unlock);
+    };
+    window.addEventListener("pointerdown", unlock);
+    return () => window.removeEventListener("pointerdown", unlock);
+  }, []);
 
   useEffect(() => {
     const signal = { cancelled: false };
@@ -129,6 +184,7 @@ export default function LiveBusinessSection({
 
   const chart = range === "month" ? month : week;
   const series = chart?.series ?? [];
+  const denseLabels = range === "month";
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -140,9 +196,17 @@ export default function LiveBusinessSection({
               Community Business
             </h3>
           </div>
-          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            LIVE
+          <span
+            className={`inline-flex items-center gap-1 text-[10px] ${
+              justNotified ? "text-amber-300" : "text-emerald-400"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                justNotified ? "bg-amber-300" : "bg-emerald-400"
+              } animate-pulse`}
+            />
+            {justNotified ? "NEW" : "LIVE"}
           </span>
         </div>
 
@@ -156,7 +220,11 @@ export default function LiveBusinessSection({
         ) : (
           <>
             <p className="text-[10px] text-slate-500 mb-1">Today</p>
-            <p className="text-2xl font-bold gradient-text break-all">
+            <p
+              className={`text-2xl font-bold break-all ${
+                justNotified ? "text-amber-300" : "gradient-text"
+              }`}
+            >
               {formatMtht(today?.summary.totalMtht ?? 0)}
             </p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-slate-400">
@@ -201,7 +269,7 @@ export default function LiveBusinessSection({
         </div>
 
         {loading && !chart ? (
-          <div className="flex flex-col items-center justify-center min-h-[180px] gap-2">
+          <div className="flex flex-col items-center justify-center min-h-[220px] gap-2">
             <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
             <p className="text-[10px] text-slate-500">Loading graph...</p>
           </div>
@@ -212,39 +280,63 @@ export default function LiveBusinessSection({
             No live community business yet
           </p>
         ) : (
-          <div className="h-[180px]">
+          <div className="h-[240px] sm:h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="liveBusinessFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
+              <LineChart
+                data={series}
+                margin={{ top: 22, right: 16, left: 4, bottom: 4 }}
+              >
+                <CartesianGrid
+                  stroke="#1a2240"
+                  strokeDasharray="3 6"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: "#64748b", fontSize: 9 }}
+                  tick={{ fill: "#64748b", fontSize: denseLabels ? 8 : 10 }}
                   axisLine={false}
                   tickLine={false}
-                  minTickGap={22}
+                  minTickGap={denseLabels ? 8 : 16}
+                  interval={denseLabels ? 1 : 0}
                 />
                 <YAxis
                   tick={{ fill: "#64748b", fontSize: 9 }}
                   axisLine={false}
                   tickLine={false}
-                  width={48}
+                  width={42}
                   tickFormatter={(value: number) => formatNumber(value, 0, true)}
                 />
-                <Tooltip content={<ChartTooltip />} />
-                <Area
+                <Line
                   type="monotone"
                   dataKey="mtht"
                   stroke="#8b5cf6"
-                  strokeWidth={2}
-                  fill="url(#liveBusinessFill)"
-                  name="MTHT"
+                  strokeWidth={7}
+                  strokeOpacity={0.18}
+                  dot={false}
+                  isAnimationActive={false}
+                  legendType="none"
                 />
-              </AreaChart>
+                <Line
+                  type="monotone"
+                  dataKey="mtht"
+                  stroke="#c4b5fd"
+                  strokeWidth={2.5}
+                  dot={{
+                    r: denseLabels ? 3 : 4.5,
+                    fill: "#8b5cf6",
+                    stroke: "#ede9fe",
+                    strokeWidth: 1.5,
+                  }}
+                  activeDot={{ r: 6, fill: "#a78bfa", stroke: "#fff" }}
+                >
+                  <LabelList
+                    dataKey="mtht"
+                    content={(props) => (
+                      <DayValueLabel {...props} dense={denseLabels} />
+                    )}
+                  />
+                </Line>
+              </LineChart>
             </ResponsiveContainer>
           </div>
         )}
