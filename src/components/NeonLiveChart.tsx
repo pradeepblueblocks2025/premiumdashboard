@@ -89,7 +89,12 @@ export default function NeonLiveChart({
 
   if (series.length === 0) return null;
 
-  const barWidth = Math.max(4, Math.min(18, chart.plotW / series.length - 6));
+  const barWidth = Math.max(
+    3,
+    Math.min(dense ? 10 : 18, chart.plotW / series.length - (dense ? 3 : 6))
+  );
+  const dateStep = Math.max(1, Math.ceil(series.length / 7));
+  const valueStep = series.length > 10 ? Math.max(2, Math.ceil(series.length / 8)) : 1;
 
   return (
     <div className="neon-live-chart relative overflow-hidden rounded-lg">
@@ -154,6 +159,7 @@ export default function NeonLiveChart({
         ))}
 
         {chart.points.map((point, index) => {
+          if (point.value <= 0) return null;
           const barH = PAD.top + chart.plotH - point.y;
           return (
             <rect
@@ -167,7 +173,9 @@ export default function NeonLiveChart({
               fill={`url(#${uid}-bar)`}
               stroke="rgba(103, 246, 255, 0.45)"
               strokeWidth="0.8"
-              style={{ animationDelay: `${0.12 + index * 0.08}s` }}
+              style={{
+                animationDelay: `${0.08 + index * Math.min(0.08, 1.4 / series.length)}s`,
+              }}
             />
           );
         })}
@@ -196,39 +204,59 @@ export default function NeonLiveChart({
           />
         </g>
 
-        {chart.points.map((point, index) => (
-          <g key={`dot-${point.label}-${index}`}>
-            <circle
-              cx={point.x}
-              cy={point.y}
-              r={dense ? 2.4 : 3.4}
-              fill="#04131c"
-              stroke="#d9ffff"
-              strokeWidth="1.4"
-              filter={`url(#${uid}-glow)`}
-            />
-            <text
-              x={point.x}
-              y={point.y + (dense && index % 2 === 1 ? 16 : -10)}
-              textAnchor="middle"
-              fill="#e7ffff"
-              fontSize={dense ? 8 : 10}
-              fontWeight={700}
-              style={{ textShadow: "0 0 8px #67f6ff" }}
-            >
-              {chartValue(point.value)}
-            </text>
-            <text
-              x={point.x}
-              y={PAD.top + chart.plotH + 16}
-              textAnchor="middle"
-              fill="#7dd3e8"
-              fontSize={dense ? 8 : 9}
-            >
-              {dense && index % 2 === 1 ? "" : point.label}
-            </text>
-          </g>
-        ))}
+        {chart.points.map((point, index) => {
+          const showDot =
+            !dense ||
+            point.value > 0 ||
+            index === 0 ||
+            index === series.length - 1 ||
+            index % dateStep === 0;
+          const showValue =
+            (index % valueStep === 0 || index === series.length - 1) &&
+            (point.value > 0 || series.length <= 10);
+          const showDate =
+            index % dateStep === 0 || index === series.length - 1;
+
+          return (
+            <g key={`dot-${point.label}-${index}`}>
+              {showDot ? (
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={dense ? 2.4 : 3.4}
+                  fill="#04131c"
+                  stroke="#d9ffff"
+                  strokeWidth="1.4"
+                  filter={`url(#${uid}-glow)`}
+                />
+              ) : null}
+              {showValue ? (
+                <text
+                  x={point.x}
+                  y={point.y + (dense && index % 2 === 1 ? 16 : -10)}
+                  textAnchor="middle"
+                  fill="#e7ffff"
+                  fontSize={dense ? 8 : 10}
+                  fontWeight={700}
+                  style={{ textShadow: "0 0 8px #67f6ff" }}
+                >
+                  {chartValue(point.value)}
+                </text>
+              ) : null}
+              {showDate ? (
+                <text
+                  x={point.x}
+                  y={PAD.top + chart.plotH + 16}
+                  textAnchor="middle"
+                  fill="#7dd3e8"
+                  fontSize={dense ? 8 : 9}
+                >
+                  {point.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })}
 
         {chart.last && (
           <g

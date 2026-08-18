@@ -1,6 +1,10 @@
 "use client";
 
-import { fetchLiveBusiness } from "@/lib/liveBusiness";
+import {
+  calendarMonthRange,
+  fetchLiveBusiness,
+  fillDailySeries,
+} from "@/lib/liveBusiness";
 import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
 import {
   playNewBusinessSound,
@@ -139,7 +143,11 @@ export default function LiveBusinessSection({
   }, [load]);
 
   const chart = range === "month" ? month : week;
-  const series = chart?.series ?? [];
+  const monthBounds = calendarMonthRange();
+  const series =
+    range === "month" && month
+      ? fillDailySeries(month.series, monthBounds.start, monthBounds.end)
+      : (week?.series ?? []);
   const denseLabels = range === "month";
 
   return (
