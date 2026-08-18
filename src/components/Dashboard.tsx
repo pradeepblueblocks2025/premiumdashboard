@@ -70,6 +70,7 @@ import { useRouter } from "next/navigation";
 import type { DashboardSectionId } from "@/lib/dashboardSections";
 import BrandLogo from "@/components/BrandLogo";
 import CustomerSwitcher from "@/components/CustomerSwitcher";
+import LiveBusinessSection from "@/components/LiveBusinessSection";
 
 const metricIcons: Record<string, React.ReactNode> = {
   users: <Users className="w-4 h-4 text-violet-400" />,
@@ -1251,6 +1252,11 @@ export default function Dashboard({
           metricsRow1={data.metricsRow1}
           metricsRow2={data.metricsRow2}
           loadingSections={loadingSections}
+        />
+
+        <LiveBusinessSection
+          key={selectedCustomerId ?? "self"}
+          customerId={selectedCustomerId}
         />
 
         <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">

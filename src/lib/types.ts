@@ -215,6 +215,32 @@ export interface UserProfile {
   viewingDownline?: boolean;
 }
 
+export type LiveBusinessRange = "7days" | "month";
+
+export interface LiveBusinessPoint {
+  label: string;
+  usd: number;
+  mtht: number;
+}
+
+export interface LiveBusinessSummary {
+  totalUsd: number;
+  totalMtht: number;
+  todayUsd?: number;
+  todayMtht?: number;
+  weekUsd?: number;
+  weekMtht?: number;
+  monthUsd?: number;
+  monthMtht?: number;
+  count?: number;
+}
+
+export interface LiveBusinessData {
+  range?: string;
+  summary: LiveBusinessSummary;
+  series: LiveBusinessPoint[];
+}
+
 export interface DashboardViewModel {
   user: UserProfile;
   metricsRow1: MetricCardData[];
