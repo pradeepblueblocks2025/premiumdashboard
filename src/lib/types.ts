@@ -219,20 +219,19 @@ export type LiveBusinessRange = "7days" | "month";
 
 export interface LiveBusinessPoint {
   label: string;
-  usd: number;
+  date: string;
   mtht: number;
+  usdt: number;
+  nftPurchased: number;
 }
 
 export interface LiveBusinessSummary {
-  totalUsd: number;
+  range?: string;
+  startDate?: string;
+  endDate?: string;
   totalMtht: number;
-  todayUsd?: number;
-  todayMtht?: number;
-  weekUsd?: number;
-  weekMtht?: number;
-  monthUsd?: number;
-  monthMtht?: number;
-  count?: number;
+  totalUsdt: number;
+  totalNftPurchased: number;
 }
 
 export interface LiveBusinessData {

@@ -1,9 +1,9 @@
 "use client";
 
 import { fetchLiveBusiness } from "@/lib/liveBusiness";
-import { formatMtht, formatUsd } from "@/lib/format";
+import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
 import type { LiveBusinessData, LiveBusinessRange } from "@/lib/types";
-import { Activity, Loader2, TrendingUp } from "lucide-react";
+import { Activity, ImageIcon, Loader2, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   Area,
@@ -27,45 +27,45 @@ function ChartTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: Array<{ value: number; dataKey: string }>;
+  payload?: Array<{ payload: { mtht: number; usdt: number; nftPurchased: number } }>;
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
-  const usd = payload.find((item) => item.dataKey === "usd")?.value ?? 0;
-  const mtht = payload.find((item) => item.dataKey === "mtht")?.value ?? 0;
+  const point = payload[0]?.payload;
+  if (!point) return null;
 
   return (
     <div className="rounded-lg bg-[#0d1228] border border-[#1a2240] px-2.5 py-2 shadow-lg">
       <p className="text-[10px] text-slate-400 mb-1">{label}</p>
-      <p className="text-xs font-semibold text-white">{formatUsd(usd)}</p>
-      {mtht > 0 && (
-        <p className="text-[10px] text-slate-400">{formatMtht(mtht)}</p>
-      )}
+      <p className="text-xs font-semibold text-white">{formatMtht(point.mtht)}</p>
+      <p className="text-[10px] text-slate-400">{formatUsd(point.usdt)}</p>
+      <p className="text-[10px] text-slate-500">
+        {formatNumber(point.nftPurchased, 0)} NFTs
+      </p>
     </div>
   );
 }
 
 function StatRow({
   label,
-  usd,
-  mtht,
+  data,
 }: {
   label: string;
-  usd?: number;
-  mtht?: number;
+  data?: LiveBusinessData | null;
 }) {
-  if (usd === undefined && mtht === undefined) return null;
+  if (!data) return null;
 
   return (
-    <div className="flex items-center justify-between gap-3 py-1.5 border-t border-[#1a2240]">
-      <span className="text-[11px] text-slate-400">{label}</span>
+    <div className="flex items-start justify-between gap-3 py-1.5 border-t border-[#1a2240]">
+      <span className="text-[11px] text-slate-400 mt-0.5">{label}</span>
       <div className="text-right">
         <p className="text-xs font-semibold text-white">
-          {formatUsd(usd ?? 0, true)}
+          {formatMtht(data.summary.totalMtht, true)}
         </p>
-        {mtht !== undefined && mtht > 0 && (
-          <p className="text-[10px] text-slate-500">{formatMtht(mtht, true)}</p>
-        )}
+        <p className="text-[10px] text-slate-500">
+          {formatUsd(data.summary.totalUsdt, true)} ·{" "}
+          {formatNumber(data.summary.totalNftPurchased, 0)} NFTs
+        </p>
       </div>
     </div>
   );
@@ -77,38 +77,40 @@ export default function LiveBusinessSection({
   customerId?: string | null;
 }) {
   const [range, setRange] = useState<LiveBusinessRange>("7days");
-  const [summary, setSummary] = useState<LiveBusinessData | null>(null);
-  const [chart, setChart] = useState<LiveBusinessData | null>(null);
+  const [today, setToday] = useState<LiveBusinessData | null>(null);
   const [week, setWeek] = useState<LiveBusinessData | null>(null);
   const [month, setMonth] = useState<LiveBusinessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (silent = false, signal?: { cancelled: boolean }) => {
-    if (!silent) setLoading(true);
-    setError(null);
+  const load = useCallback(
+    async (silent = false, signal?: { cancelled: boolean }) => {
+      if (!silent) setLoading(true);
+      setError(null);
 
-    try {
-      const [live, weekData, monthData] = await Promise.all([
-        fetchLiveBusiness(undefined, customerId),
-        fetchLiveBusiness("7days", customerId),
-        fetchLiveBusiness("month", customerId),
-      ]);
+      try {
+        const [todayData, weekData, monthData] = await Promise.all([
+          fetchLiveBusiness(undefined, customerId),
+          fetchLiveBusiness("7days", customerId),
+          fetchLiveBusiness("month", customerId),
+        ]);
 
-      if (signal?.cancelled) return;
+        if (signal?.cancelled) return;
 
-      setSummary(live);
-      setWeek(weekData);
-      setMonth(monthData);
-    } catch (err) {
-      if (signal?.cancelled) return;
-      setError(
-        err instanceof Error ? err.message : "Failed to load live business"
-      );
-    } finally {
-      if (!signal?.cancelled && !silent) setLoading(false);
-    }
-  }, [customerId]);
+        setToday(todayData);
+        setWeek(weekData);
+        setMonth(monthData);
+      } catch (err) {
+        if (signal?.cancelled) return;
+        setError(
+          err instanceof Error ? err.message : "Failed to load live business"
+        );
+      } finally {
+        if (!signal?.cancelled && !silent) setLoading(false);
+      }
+    },
+    [customerId]
+  );
 
   useEffect(() => {
     const signal = { cancelled: false };
@@ -125,12 +127,7 @@ export default function LiveBusinessSection({
     };
   }, [load]);
 
-  useEffect(() => {
-    setChart(range === "month" ? month : week);
-  }, [range, month, week]);
-
-  const heroUsd = summary?.summary.todayUsd ?? summary?.summary.totalUsd ?? 0;
-  const heroMtht = summary?.summary.todayMtht ?? summary?.summary.totalMtht ?? 0;
+  const chart = range === "month" ? month : week;
   const series = chart?.series ?? [];
 
   return (
@@ -149,46 +146,29 @@ export default function LiveBusinessSection({
           </span>
         </div>
 
-        {loading && !summary ? (
+        {loading && !today ? (
           <div className="flex flex-col items-center justify-center min-h-[140px] gap-2">
             <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
             <p className="text-[10px] text-slate-500">Loading business...</p>
           </div>
-        ) : error && !summary ? (
+        ) : error && !today ? (
           <p className="text-xs text-red-400">{error}</p>
         ) : (
           <>
-            <p className="text-[10px] text-slate-500 mb-1">Live business</p>
+            <p className="text-[10px] text-slate-500 mb-1">Today</p>
             <p className="text-2xl font-bold gradient-text break-all">
-              {formatUsd(heroUsd)}
+              {formatMtht(today?.summary.totalMtht ?? 0)}
             </p>
-            {heroMtht > 0 && (
-              <p className="text-xs text-slate-400 mt-1">{formatMtht(heroMtht)}</p>
-            )}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-slate-400">
+              <span>{formatUsd(today?.summary.totalUsdt ?? 0)}</span>
+              <span className="inline-flex items-center gap-1">
+                <ImageIcon className="w-3 h-3" />
+                {formatNumber(today?.summary.totalNftPurchased ?? 0, 0)} NFTs
+              </span>
+            </div>
             <div className="mt-4">
-              <StatRow
-                label="Today"
-                usd={summary?.summary.todayUsd ?? summary?.summary.totalUsd}
-                mtht={summary?.summary.todayMtht ?? summary?.summary.totalMtht}
-              />
-              <StatRow
-                label="7 Days"
-                usd={week?.summary.totalUsd ?? week?.summary.weekUsd}
-                mtht={week?.summary.totalMtht ?? week?.summary.weekMtht}
-              />
-              <StatRow
-                label="This Month"
-                usd={month?.summary.totalUsd ?? month?.summary.monthUsd}
-                mtht={month?.summary.totalMtht ?? month?.summary.monthMtht}
-              />
-              {summary?.summary.count !== undefined && (
-                <div className="flex items-center justify-between gap-3 py-1.5 border-t border-[#1a2240]">
-                  <span className="text-[11px] text-slate-400">Orders</span>
-                  <p className="text-xs font-semibold text-white">
-                    {summary.summary.count}
-                  </p>
-                </div>
-              )}
+              <StatRow label="7 Days" data={week} />
+              <StatRow label="This Month" data={month} />
             </div>
           </>
         )}
@@ -252,17 +232,17 @@ export default function LiveBusinessSection({
                   tick={{ fill: "#64748b", fontSize: 9 }}
                   axisLine={false}
                   tickLine={false}
-                  width={42}
-                  tickFormatter={(value: number) => formatUsd(value, true)}
+                  width={48}
+                  tickFormatter={(value: number) => formatNumber(value, 0, true)}
                 />
                 <Tooltip content={<ChartTooltip />} />
                 <Area
                   type="monotone"
-                  dataKey="usd"
+                  dataKey="mtht"
                   stroke="#8b5cf6"
                   strokeWidth={2}
                   fill="url(#liveBusinessFill)"
-                  name="Business"
+                  name="MTHT"
                 />
               </AreaChart>
             </ResponsiveContainer>
