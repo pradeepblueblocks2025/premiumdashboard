@@ -9,7 +9,6 @@ import {
   ArrowLeftRight,
   Wallet,
   Users,
-  Network,
   Coins,
   Gift,
   TrendingUp,
@@ -36,12 +35,11 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
+  LabelList,
 } from "recharts";
 import { useState, useEffect } from "react";
 import type {
   BoosterAchieverData,
-  CommunityActivityItem,
   DashboardViewModel,
   FirstLevelCustomer,
   LegsProgress,
@@ -49,7 +47,6 @@ import type {
   NftPriceChartData,
   PremiumDashboardData,
   RankAchieverData,
-  RankCriteriaSummaryItem,
   RankProgressItem,
   UserProfile,
   VolumeLevelData,
@@ -74,7 +71,6 @@ import LiveBusinessSection from "@/components/LiveBusinessSection";
 
 const metricIcons: Record<string, React.ReactNode> = {
   users: <Users className="w-4 h-4 text-violet-400" />,
-  network: <Network className="w-4 h-4 text-cyan-400" />,
   staking: <Layers className="w-4 h-4 text-emerald-400" />,
   withdraw: <ArrowUpFromLine className="w-4 h-4 text-orange-400" />,
   transfer: <ArrowLeftRight className="w-4 h-4 text-blue-400" />,
@@ -276,12 +272,17 @@ function StatsGrid({
   const purchaseLoading = loadingSections?.has("purchase-stats");
   const financialLoading = loadingSections?.has("financial-stats");
 
-  const row1Loading = [communityLoading, communityLoading, purchaseLoading, financialLoading, financialLoading];
-  const row2Loading = [financialLoading, financialLoading, financialLoading, loadingSections?.has("customer-stats")];
+  const row1Loading = [communityLoading, purchaseLoading, financialLoading];
+  const row2Loading = [
+    financialLoading,
+    financialLoading,
+    loadingSections?.has("volume-by-level"),
+    purchaseLoading,
+  ];
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 space-y-2">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {metricsRow1.map((m, i) => (
           <MetricCard key={m.title} {...m} loading={row1Loading[i]} />
         ))}
@@ -831,11 +832,9 @@ function RankCriteriaSection({
 
 function LazyRankProgressPanel({
   rankTabs,
-  rankCriteriaSummary,
   customerId = null,
 }: {
   rankTabs: string[];
-  rankCriteriaSummary: RankCriteriaSummaryItem[];
   customerId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -929,50 +928,12 @@ function LazyRankProgressPanel({
           </button>
         </div>
       ) : (
-        <>
-          <RankCriteriaSection
+        <RankCriteriaSection
             rankTabs={rankTabs}
             rankProgress={rankProgress}
             customerId={customerId}
           />
-          <div className="mt-3">
-            <RankCriteriaSummary rankCriteriaSummary={rankCriteriaSummary} />
-          </div>
-        </>
       )}
-    </div>
-  );
-}
-
-function RankCriteriaSummary({
-  rankCriteriaSummary,
-}: {
-  rankCriteriaSummary: RankCriteriaSummaryItem[];
-}) {
-  return (
-    <div className="card p-4 flex flex-col h-full">
-      <h3 className="text-xs font-semibold text-slate-300 mb-3">
-        Rank Criteria Summary
-      </h3>
-      <div className="space-y-2 flex-1">
-        {rankCriteriaSummary.map(({ rank, requirement }) => (
-          <div
-            key={rank}
-            className="flex items-start gap-2 p-2 rounded-lg bg-[#131a35] border border-[#1a2240]"
-          >
-            <Star className="w-3 h-3 text-violet-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <span className="text-[10px] font-semibold text-violet-400">
-                {rank}
-              </span>
-              <p className="text-[10px] text-slate-400">{requirement}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button className="mt-3 w-full py-2 text-[10px] font-medium text-violet-400 border border-violet-500/30 rounded-lg hover:bg-violet-500/10 transition-colors">
-        View All Criteria
-      </button>
     </div>
   );
 }
@@ -987,12 +948,13 @@ function LevelVolumeChart({
       <h3 className="text-xs font-semibold text-slate-300 mb-3">
         Level Volume Overview
       </h3>
-      <div className="flex-1">
-        <ResponsiveContainer width="100%" height={160}>
+      <div className="flex-1 outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:cursor-default">
+        <ResponsiveContainer width="100%" height={180}>
           <BarChart
             data={levelVolumeData}
             layout="vertical"
-            margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
+            margin={{ top: 4, right: 72, left: 0, bottom: 0 }}
+            style={{ outline: "none" }}
           >
             <XAxis type="number" hide />
             <YAxis
@@ -1003,24 +965,24 @@ function LevelVolumeChart({
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip
-              contentStyle={{
-                background: "#0d1228",
-                border: "1px solid #1a2240",
-                borderRadius: 8,
-                fontSize: 11,
-              }}
-              formatter={(value) => [
-                `$${Number(value).toLocaleString()}`,
-                "Volume",
-              ]}
-            />
             <Bar
               dataKey="value"
               fill="#8b5cf6"
               radius={[0, 4, 4, 0]}
               barSize={14}
-            />
+              activeBar={false}
+              cursor="default"
+            >
+              <LabelList
+                dataKey="value"
+                position="right"
+                fill="#e2e8f0"
+                fontSize={10}
+                formatter={(value) =>
+                  typeof value === "number" ? formatUsd(value, true) : ""
+                }
+              />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -1028,80 +990,14 @@ function LevelVolumeChart({
   );
 }
 
-function CommunityActivityCard({
-  communityActivity,
-}: {
-  communityActivity: CommunityActivityItem[];
-}) {
-  const activityIcons: Record<string, React.ReactNode> = {
-    Deposit: <ArrowDownToLine className="w-3 h-3" />,
-    Purchase: <ImageIcon className="w-3 h-3" />,
-    Withdraw: <ArrowUpFromLine className="w-3 h-3" />,
-    "Staking Reward": <Gift className="w-3 h-3" />,
-    "Affiliate Reward": <TrendingUp className="w-3 h-3" />,
-    Transfer: <ArrowLeftRight className="w-3 h-3" />,
-  };
-
-  return (
-    <div className="card p-4 flex flex-col h-full">
-      <h3 className="text-xs font-semibold text-slate-300 mb-3">
-        Community Activity (24h)
-      </h3>
-      <div className="space-y-2 flex-1">
-        {communityActivity.length === 0 ? (
-          <p className="text-xs text-slate-500 text-center py-8">
-            No recent activity available
-          </p>
-        ) : (
-          communityActivity.map(({ type, amount, positive, time }) => (
-            <div
-              key={`${type}-${time}`}
-              className="flex items-center justify-between py-1.5 border-b border-[#1a2240]/50 last:border-0"
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    positive
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "bg-red-500/10 text-red-400"
-                  }`}
-                >
-                  {activityIcons[type] ?? <Circle className="w-3 h-3" />}
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-300">{type}</p>
-                  <p className="text-[9px] text-slate-600">{time}</p>
-                </div>
-              </div>
-              <span
-                className={`text-[10px] font-medium flex-shrink-0 text-right ${
-                  positive ? "text-emerald-400" : "text-red-400"
-                }`}
-              >
-                {amount}
-              </span>
-            </div>
-          ))
-        )}
-      </div>
-      <button className="mt-3 w-full py-2 text-[10px] font-medium text-violet-400 border border-violet-500/30 rounded-lg hover:bg-violet-500/10 transition-colors">
-        View All Activity
-      </button>
-    </div>
-  );
-}
-
 function BottomGrid({
   levelVolumeData,
-  communityActivity,
 }: {
   levelVolumeData: DashboardViewModel["levelVolumeData"];
-  communityActivity: CommunityActivityItem[];
 }) {
   return (
-    <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div className="mx-3 sm:mx-4 mb-4">
       <LevelVolumeChart levelVolumeData={levelVolumeData} />
-      <CommunityActivityCard communityActivity={communityActivity} />
     </div>
   );
 }
@@ -1285,13 +1181,9 @@ export default function Dashboard({
         <LazyRankProgressPanel
           key={`rank-progress-${selectedCustomerId ?? "self"}`}
           rankTabs={data.rankTabs}
-          rankCriteriaSummary={data.rankCriteriaSummary}
           customerId={selectedCustomerId}
         />
-        <BottomGrid
-          levelVolumeData={data.levelVolumeData}
-          communityActivity={data.communityActivity}
-        />
+        <BottomGrid levelVolumeData={data.levelVolumeData} />
         <QuickActionsFooter />
         <Footer />
       </div>
