@@ -1254,10 +1254,7 @@ export default function Dashboard({
           loadingSections={loadingSections}
         />
 
-        <LiveBusinessSection
-          key={selectedCustomerId ?? "self"}
-          customerId={selectedCustomerId}
-        />
+        <LiveBusinessSection customerId={selectedCustomerId} />
 
         <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {chartsLoading ? (
@@ -1286,7 +1283,7 @@ export default function Dashboard({
           <VolumeLevelsStrip volumeLevels={data.volumeLevels} />
         )}
         <LazyRankProgressPanel
-          key={selectedCustomerId ?? "self"}
+          key={`rank-progress-${selectedCustomerId ?? "self"}`}
           rankTabs={data.rankTabs}
           rankCriteriaSummary={data.rankCriteriaSummary}
           customerId={selectedCustomerId}

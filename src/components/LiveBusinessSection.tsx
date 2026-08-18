@@ -84,46 +84,43 @@ export default function LiveBusinessSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(
-    async (silent = false) => {
-      if (!silent) setLoading(true);
-      setError(null);
+  const load = useCallback(async (silent = false, signal?: { cancelled: boolean }) => {
+    if (!silent) setLoading(true);
+    setError(null);
 
-      try {
-        const [live, weekData, monthData] = await Promise.all([
-          fetchLiveBusiness(undefined, customerId),
-          fetchLiveBusiness("7days", customerId),
-          fetchLiveBusiness("month", customerId),
-        ]);
+    try {
+      const [live, weekData, monthData] = await Promise.all([
+        fetchLiveBusiness(undefined, customerId),
+        fetchLiveBusiness("7days", customerId),
+        fetchLiveBusiness("month", customerId),
+      ]);
 
-        setSummary(live);
-        setWeek(weekData);
-        setMonth(monthData);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load live business"
-        );
-      } finally {
-        if (!silent) setLoading(false);
-      }
-    },
-    [customerId]
-  );
+      if (signal?.cancelled) return;
+
+      setSummary(live);
+      setWeek(weekData);
+      setMonth(monthData);
+    } catch (err) {
+      if (signal?.cancelled) return;
+      setError(
+        err instanceof Error ? err.message : "Failed to load live business"
+      );
+    } finally {
+      if (!signal?.cancelled && !silent) setLoading(false);
+    }
+  }, [customerId]);
 
   useEffect(() => {
-    let cancelled = false;
+    const signal = { cancelled: false };
 
-    async function run() {
-      if (!cancelled) await load();
-    }
-    run();
+    void load(false, signal);
 
     const timer = window.setInterval(() => {
-      if (!cancelled) load(true);
+      if (!signal.cancelled) void load(true, signal);
     }, POLL_MS);
 
     return () => {
-      cancelled = true;
+      signal.cancelled = true;
       window.clearInterval(timer);
     };
   }, [load]);
