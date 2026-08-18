@@ -9,15 +9,7 @@ import {
 import type { LiveBusinessData, LiveBusinessRange } from "@/lib/types";
 import { Activity, ImageIcon, Loader2, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  CartesianGrid,
-  LabelList,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
+import NeonLiveChart from "@/components/NeonLiveChart";
 
 const POLL_MS = 30_000;
 
@@ -25,42 +17,6 @@ const RANGES: Array<{ id: LiveBusinessRange; label: string }> = [
   { id: "7days", label: "7 Days" },
   { id: "month", label: "Month" },
 ];
-
-function DayValueLabel({
-  x,
-  y,
-  value,
-  index,
-  dense,
-}: {
-  x?: number | string;
-  y?: number | string;
-  value?: string | number | null;
-  index?: number;
-  dense?: boolean;
-}) {
-  const px = typeof x === "number" ? x : Number(x);
-  const py = typeof y === "number" ? y : Number(y);
-  const amount = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(amount)) {
-    return null;
-  }
-
-  const offset = dense && (index ?? 0) % 2 === 1 ? 16 : -8;
-
-  return (
-    <text
-      x={px}
-      y={py + offset}
-      textAnchor="middle"
-      fill="#ddd6fe"
-      fontSize={dense ? 8 : 10}
-      fontWeight={600}
-    >
-      {formatNumber(amount, 0, true)}
-    </text>
-  );
-}
 
 function StatRow({
   label,
@@ -280,76 +236,11 @@ export default function LiveBusinessSection({
             No live community business yet
           </p>
         ) : (
-          <div className="h-[240px] sm:h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={series}
-                margin={{ top: 22, right: 16, left: 4, bottom: 4 }}
-              >
-                <CartesianGrid
-                  stroke="#1a2240"
-                  strokeDasharray="3 6"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fill: "#64748b", fontSize: denseLabels ? 8 : 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  minTickGap={denseLabels ? 8 : 16}
-                  interval={denseLabels ? 1 : 0}
-                />
-                <YAxis
-                  tick={{ fill: "#64748b", fontSize: 9 }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={42}
-                  tickFormatter={(value: number) => formatNumber(value, 0, true)}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="mtht"
-                  stroke="#8b5cf6"
-                  strokeWidth={7}
-                  strokeOpacity={0.18}
-                  dot={false}
-                  isAnimationActive={false}
-                  legendType="none"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="mtht"
-                  stroke="#c4b5fd"
-                  strokeWidth={2.5}
-                  dot={{
-                    r: denseLabels ? 3 : 4.5,
-                    fill: "#8b5cf6",
-                    stroke: "#ede9fe",
-                    strokeWidth: 1.5,
-                  }}
-                  activeDot={{ r: 6, fill: "#a78bfa", stroke: "#fff" }}
-                >
-                  <LabelList
-                    dataKey="mtht"
-                    content={(props) => (
-                      <DayValueLabel
-                        x={typeof props.x === "number" ? props.x : undefined}
-                        y={typeof props.y === "number" ? props.y : undefined}
-                        value={
-                          typeof props.value === "number" ||
-                          typeof props.value === "string"
-                            ? props.value
-                            : undefined
-                        }
-                        index={props.index}
-                        dense={denseLabels}
-                      />
-                    )}
-                  />
-                </Line>
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <NeonLiveChart
+            key={range}
+            series={series}
+            dense={denseLabels}
+          />
         )}
       </div>
     </div>

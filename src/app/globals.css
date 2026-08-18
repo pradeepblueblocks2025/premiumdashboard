@@ -57,3 +57,34 @@ body {
     border-radius: 10px;
   }
 }
+
+.neon-live-chart {
+  background:
+    radial-gradient(120% 80% at 80% 0%, rgba(0, 212, 255, 0.12), transparent 55%),
+    linear-gradient(180deg, rgba(4, 16, 32, 0.4), rgba(4, 10, 24, 0.9));
+}
+
+.neon-line-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: neon-draw 2.4s ease-out forwards;
+}
+
+@keyframes neon-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.neon-bar {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  animation: neon-bar-grow 0.7s ease-out forwards;
+}
+
+@keyframes neon-bar-grow {
+  to {
+    transform: scaleY(1);
+  }
+}
