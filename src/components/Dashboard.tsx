@@ -1155,7 +1155,7 @@ export default function Dashboard({
           <div className="mx-3 sm:mx-4 mb-3 card px-3 py-2 flex items-center gap-2">
             <Loader2 className="w-3.5 h-3.5 text-violet-400 animate-spin flex-shrink-0" />
             <p className="text-[10px] text-slate-400">
-              Loading dashboard sections one at a time to reduce memory usage...
+              Syncing your latest dashboard data...
             </p>
           </div>
         )}
