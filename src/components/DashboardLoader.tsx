@@ -7,7 +7,9 @@ import {
   getClientAuthToken,
 } from "@/lib/clientApi";
 import { getStoredToken } from "@/lib/auth";
+import { fetchCustomerAccess } from "@/lib/customerAccess";
 import { withCustomerId } from "@/lib/format";
+import ComingSoon from "@/components/ComingSoon";
 import {
   createInitialDashboardViewModel,
   DASHBOARD_SECTION_ORDER,
@@ -60,6 +62,15 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function isAuthError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("session expired") ||
+    message.includes("(401)") ||
+    lower.includes("not authenticated")
+  );
+}
+
 export default function DashboardLoader() {
   const router = useRouter();
   const authRedirected = useRef(false);
@@ -71,6 +82,10 @@ export default function DashboardLoader() {
     Partial<Record<DashboardSectionId, string>>
   >({});
   const [authChecked, setAuthChecked] = useState(false);
+  const [accessGate, setAccessGate] = useState<"pending" | "allowed" | "blocked">(
+    "pending"
+  );
+  const [accessCheckId, setAccessCheckId] = useState(0);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
     null
   );
@@ -94,9 +109,45 @@ export default function DashboardLoader() {
       return;
     }
 
-    setData(createInitialDashboardViewModel(token));
-    setAuthChecked(true);
-  }, [router]);
+    const authToken = token;
+    let cancelled = false;
+    setAccessGate("pending");
+    setAuthChecked(false);
+
+    async function checkDashboardAccess() {
+      try {
+        const access = await fetchCustomerAccess();
+        if (cancelled) return;
+        if (access.allowed) {
+          setData(createInitialDashboardViewModel(authToken));
+          setAccessGate("allowed");
+          setAuthChecked(true);
+          return;
+        }
+        setData(null);
+        setAccessGate("blocked");
+      } catch (err) {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to verify dashboard access";
+        if (isAuthError(message)) {
+          if (!authRedirected.current) {
+            authRedirected.current = true;
+            router.replace("/");
+          }
+          return;
+        }
+        setData(null);
+        setAccessGate("blocked");
+      }
+    }
+
+    checkDashboardAccess();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, accessCheckId]);
 
   useEffect(() => {
     if (!authChecked) return;
@@ -117,11 +168,7 @@ export default function DashboardLoader() {
             err instanceof Error
               ? err.message
               : "Failed to load first-level customers";
-          if (
-            message.toLowerCase().includes("session expired") ||
-            message.includes("(401)") ||
-            message.toLowerCase().includes("not authenticated")
-          ) {
+          if (isAuthError(message)) {
             if (!authRedirected.current) {
               authRedirected.current = true;
               router.replace("/");
@@ -183,11 +230,7 @@ export default function DashboardLoader() {
                 ? err.message
                 : `Failed to load ${SECTION_LABELS[section]}`;
 
-            if (
-              message.toLowerCase().includes("session expired") ||
-              message.includes("(401)") ||
-              message.toLowerCase().includes("not authenticated")
-            ) {
+            if (isAuthError(message)) {
               if (!authRedirected.current) {
                 authRedirected.current = true;
                 router.replace("/");
@@ -219,6 +262,16 @@ export default function DashboardLoader() {
       cancelled = true;
     };
   }, [authChecked, router, selectedCustomerId]);
+
+  if (accessGate === "pending") {
+    return <DashboardBootScreen message="Checking dashboard access..." />;
+  }
+
+  if (accessGate === "blocked") {
+    return (
+      <ComingSoon onRetry={() => setAccessCheckId((current) => current + 1)} />
+    );
+  }
 
   if (!authChecked || !data) {
     return <DashboardBootScreen message="Checking session..." />;
