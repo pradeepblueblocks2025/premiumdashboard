@@ -10,7 +10,6 @@ import {
   Wallet,
   Users,
   Coins,
-  Gift,
   TrendingUp,
   ImageIcon,
   Star,
@@ -69,8 +68,6 @@ const metricIcons: Record<string, React.ReactNode> = {
   staking: <Layers className="w-4 h-4 text-emerald-400" />,
   withdraw: <ArrowUpFromLine className="w-4 h-4 text-orange-400" />,
   transfer: <ArrowLeftRight className="w-4 h-4 text-blue-400" />,
-  reward: <Gift className="w-4 h-4 text-pink-400" />,
-  affiliate: <TrendingUp className="w-4 h-4 text-yellow-400" />,
   volume: <Coins className="w-4 h-4 text-indigo-400" />,
   nft: <ImageIcon className="w-4 h-4 text-purple-400" />,
 };
@@ -183,21 +180,30 @@ function ProfileBanner({ user }: { user: UserProfile }) {
   );
 }
 
+const FORTUNE_APP_LINKS = {
+  deposit: "https://fortunenft.world/user/deposit",
+  withdrawal: "https://fortunenft.world/user/withdrawal",
+  staking: "https://fortunenft.world/user/staking",
+  swap: "https://fortunenft.world/user/swap",
+  wallet: "https://fortunenft.world/user/wallet",
+} as const;
+
 function QuickActions() {
   const actions = [
-    { label: "Deposit", icon: ArrowDownToLine },
-    { label: "Withdraw", icon: ArrowUpFromLine },
-    { label: "Staking", icon: Layers },
-    { label: "Swap", icon: ArrowLeftRight },
-    { label: "Wallet", icon: Wallet },
+    { label: "Deposit", icon: ArrowDownToLine, href: FORTUNE_APP_LINKS.deposit },
+    { label: "Withdraw", icon: ArrowUpFromLine, href: FORTUNE_APP_LINKS.withdrawal },
+    { label: "Staking", icon: Layers, href: FORTUNE_APP_LINKS.staking },
+    { label: "Swap", icon: ArrowLeftRight, href: FORTUNE_APP_LINKS.swap },
+    { label: "Wallet", icon: Wallet, href: FORTUNE_APP_LINKS.wallet },
   ];
 
   return (
     <div className="mb-4 overflow-x-auto scrollbar-hide">
       <div className="flex sm:grid sm:grid-cols-5 gap-2 px-3 sm:px-4 min-w-max sm:min-w-0">
-        {actions.map(({ label, icon: Icon }) => (
-          <button
+        {actions.map(({ label, icon: Icon, href }) => (
+          <a
             key={label}
+            href={href}
             className="flex-shrink-0 w-[4.5rem] sm:w-auto flex flex-col items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-xl bg-[#0d1228] border border-[#1a2240] hover:border-violet-500/40 hover:bg-[#131a35] transition-all group"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#131a35] border border-[#2a3458] flex items-center justify-center group-hover:border-violet-500/50 transition-colors">
@@ -206,7 +212,7 @@ function QuickActions() {
             <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
               {label}
             </span>
-          </button>
+          </a>
         ))}
       </div>
     </div>
@@ -269,8 +275,6 @@ function StatsGrid({
 
   const row1Loading = [communityLoading, purchaseLoading, financialLoading];
   const row2Loading = [
-    financialLoading,
-    financialLoading,
     loadingSections?.has("volume-by-level"),
     purchaseLoading,
   ];
@@ -282,7 +286,7 @@ function StatsGrid({
           <MetricCard key={m.title} {...m} loading={row1Loading[i]} />
         ))}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {metricsRow2.map((m, i) => (
           <MetricCard key={m.title} {...m} loading={row2Loading[i]} />
         ))}
@@ -1028,9 +1032,9 @@ function BottomGrid({
 
 function QuickActionsFooter() {
   const actions = [
-    { label: "Deposit", icon: ArrowDownToLine },
-    { label: "Staking", icon: Layers },
-    { label: "Withdraw", icon: ArrowUpFromLine },
+    { label: "Deposit", icon: ArrowDownToLine, href: FORTUNE_APP_LINKS.deposit },
+    { label: "Staking", icon: Layers, href: FORTUNE_APP_LINKS.staking },
+    { label: "Withdraw", icon: ArrowUpFromLine, href: FORTUNE_APP_LINKS.withdrawal },
     { label: "Transfer", icon: ArrowLeftRight },
     { label: "NFT Market", icon: ImageIcon },
     { label: "Reports", icon: TrendingUp },
@@ -1040,19 +1044,33 @@ function QuickActionsFooter() {
     <div className="mx-3 sm:mx-4 mb-4 card p-3">
       <p className="text-[10px] text-slate-500 mb-3 text-center">Quick Actions</p>
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-2">
-        {actions.map(({ label, icon: Icon }) => (
-          <button
-            key={label}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-9 h-9 rounded-lg border border-[#2a3458] flex items-center justify-center group-hover:border-violet-500/50 transition-colors">
-              <Icon className="w-4 h-4 text-slate-400 group-hover:text-violet-400 transition-colors" />
-            </div>
-            <span className="text-[9px] text-slate-500 text-center leading-tight">
-              {label}
-            </span>
-          </button>
-        ))}
+        {actions.map(({ label, icon: Icon, href }) => {
+          const className = "flex flex-col items-center gap-1.5 group";
+          const content = (
+            <>
+              <div className="w-9 h-9 rounded-lg border border-[#2a3458] flex items-center justify-center group-hover:border-violet-500/50 transition-colors">
+                <Icon className="w-4 h-4 text-slate-400 group-hover:text-violet-400 transition-colors" />
+              </div>
+              <span className="text-[9px] text-slate-500 text-center leading-tight">
+                {label}
+              </span>
+            </>
+          );
+
+          if (href) {
+            return (
+              <a key={label} href={href} className={className}>
+                {content}
+              </a>
+            );
+          }
+
+          return (
+            <button key={label} type="button" className={className}>
+              {content}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

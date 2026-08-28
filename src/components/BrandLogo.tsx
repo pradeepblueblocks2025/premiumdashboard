@@ -6,19 +6,27 @@ type BrandLogoProps = {
   priority?: boolean;
 };
 
+const HOME_URL = "https://fortunenft.world/";
+
 export default function BrandLogo({
   size,
   className = "",
   priority = false,
 }: BrandLogoProps) {
   return (
-    <Image
-      src="/logo.png"
-      alt="Fortune NFT"
-      width={size}
-      height={size}
-      className={`rounded-lg ${className}`.trim()}
-      priority={priority}
-    />
+    <a
+      href={HOME_URL}
+      className={`inline-flex shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 ${className}`.trim()}
+      aria-label="Fortune NFT home"
+    >
+      <Image
+        src="/logo.png"
+        alt="Fortune NFT"
+        width={size}
+        height={size}
+        className="rounded-lg"
+        priority={priority}
+      />
+    </a>
   );
 }

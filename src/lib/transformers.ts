@@ -129,18 +129,6 @@ function buildMetrics(data: PremiumDashboardData): {
     ],
     row2: [
       {
-        title: "Total Staking Rewards",
-        value: formatMtht(data.stakingRewards.totalStakingRewards, true),
-        change: null,
-        icon: "reward",
-      },
-      {
-        title: "Total Affiliate Rewards",
-        value: formatMtht(data.affiliateRewards.totalAffiliateRewards, true),
-        change: null,
-        icon: "affiliate",
-      },
-      {
         title: "Total Community Volume",
         value: formatUsd(communityVolumeUsd, true),
         change: null,
