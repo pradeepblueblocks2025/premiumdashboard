@@ -32,6 +32,7 @@ type PieSlice = {
   key: string;
   name: string;
   value: number;
+  visual: number;
   percent: number;
   color: string;
   isPower: boolean;
@@ -63,7 +64,32 @@ function buildSlices(
       percent: total > 0 ? (leg.totalAffiliate / total) * 100 : 0,
       color: SLICE_COLORS[index % SLICE_COLORS.length],
       isPower: !!powerId && String(leg.legId) === powerId,
+      visual: 0,
     }));
+}
+
+function withVisibleWeights(slices: PieSlice[]): PieSlice[] {
+  const items = slices.filter((slice) => slice.value > 0);
+  if (items.length === 0) return [];
+
+  const total = items.reduce((sum, slice) => sum + slice.value, 0);
+  if (total <= 0) return items;
+
+  const minShare = Math.min(0.05, 0.45 / items.length);
+  const smallFlags = items.map((slice) => slice.value / total < minShare);
+  const smallCount = smallFlags.filter(Boolean).length;
+  const leftover = Math.max(0.4, 1 - smallCount * minShare);
+  const largeTotal = items.reduce(
+    (sum, slice, index) => (smallFlags[index] ? sum : sum + slice.value),
+    0
+  );
+
+  return items.map((slice, index) => ({
+    ...slice,
+    visual: smallFlags[index]
+      ? minShare
+      : leftover * (slice.value / (largeTotal || slice.value)),
+  }));
 }
 
 function PieTooltip({
@@ -148,10 +174,7 @@ export default function AffiliateLegsPie({
       buildSlices(data?.legs ?? [], data?.powerLeg?.legId),
     [data]
   );
-  const pieSlices = useMemo(
-    () => slices.filter((slice) => slice.value > 0),
-    [slices]
-  );
+  const pieSlices = useMemo(() => withVisibleWeights(slices), [slices]);
 
   const chartBody =
     loading && !data ? (
@@ -173,9 +196,9 @@ export default function AffiliateLegsPie({
               data={
                 pieSlices.length > 0
                   ? pieSlices
-                  : [{ name: "None", value: 1, color: "#1a2240" }]
+                  : [{ name: "None", value: 1, visual: 1, color: "#1a2240" }]
               }
-              dataKey="value"
+              dataKey="visual"
               nameKey="name"
               cx="50%"
               cy="50%"
@@ -183,9 +206,9 @@ export default function AffiliateLegsPie({
               outerRadius={(point: PieSlice) =>
                 selectedKey && point.key === selectedKey ? "88%" : "78%"
               }
-              paddingAngle={pieSlices.length > 12 ? 0.4 : 2}
-              stroke="#0a0f24"
-              strokeWidth={1}
+              paddingAngle={0.75}
+              stroke="#070b1a"
+              strokeWidth={2}
               onClick={(entry) => {
                 const key = String(entry?.payload?.key ?? entry?.key ?? "");
                 if (key) toggleSelected(key);
@@ -203,8 +226,8 @@ export default function AffiliateLegsPie({
                     key={slice.key}
                     fill={slice.color}
                     fillOpacity={dimmed ? 0.28 : 1}
-                    stroke={selected ? "#ffffff" : "#0a0f24"}
-                    strokeWidth={selected ? 2.5 : 1}
+                        stroke={selected ? "#ffffff" : "#070b1a"}
+                        strokeWidth={selected ? 3 : 2}
                     style={{ cursor: "pointer", outline: "none" }}
                   />
                 );
