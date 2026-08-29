@@ -194,6 +194,7 @@ const FORTUNE_APP_LINKS = {
   staking: "https://fortunenft.world/user/staking",
   swap: "https://fortunenft.world/user/swap",
   wallet: "https://fortunenft.world/user/wallet",
+  fundtransfer: "https://fortunenft.world/user/fundtransfer",
 } as const;
 
 function QuickActions() {
@@ -1009,7 +1010,7 @@ function QuickActionsFooter() {
     { label: "Deposit", icon: ArrowDownToLine, href: FORTUNE_APP_LINKS.deposit },
     { label: "Staking", icon: Layers, href: FORTUNE_APP_LINKS.staking },
     { label: "Withdraw", icon: ArrowUpFromLine, href: FORTUNE_APP_LINKS.withdrawal },
-    { label: "Transfer", icon: ArrowLeftRight },
+    { label: "Transfer", icon: ArrowLeftRight, href: FORTUNE_APP_LINKS.fundtransfer },
     { label: "NFT Market", icon: ImageIcon },
     { label: "Reports", icon: TrendingUp },
   ];
