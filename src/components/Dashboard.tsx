@@ -9,6 +9,7 @@ import {
   Users,
   Coins,
   TrendingUp,
+  Gift,
   ImageIcon,
   Star,
   Trophy,
@@ -41,7 +42,6 @@ import type {
   RankAchieverData,
   RankProgressItem,
   UserProfile,
-  VolumeLevelData,
 } from "@/lib/types";
 import {
   barColorFromApi,
@@ -65,6 +65,7 @@ import LiveBusinessSection from "@/components/LiveBusinessSection";
 
 const metricIcons: Record<string, React.ReactNode> = {
   users: <Users className="w-4 h-4 text-violet-400" />,
+  affiliate: <Gift className="w-4 h-4 text-pink-400" />,
   staking: <Layers className="w-4 h-4 text-emerald-400" />,
   withdraw: <ArrowUpFromLine className="w-4 h-4 text-orange-400" />,
   transfer: <ArrowLeftRight className="w-4 h-4 text-blue-400" />,
@@ -279,7 +280,12 @@ function StatsGrid({
   const purchaseLoading = loadingSections?.has("purchase-stats");
   const financialLoading = loadingSections?.has("financial-stats");
 
-  const row1Loading = [communityLoading, purchaseLoading, financialLoading];
+  const row1Loading = [
+    communityLoading,
+    financialLoading,
+    financialLoading,
+    financialLoading,
+  ];
   const row2Loading = [
     loadingSections?.has("volume-by-level"),
     purchaseLoading,
@@ -287,7 +293,7 @@ function StatsGrid({
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 space-y-2">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {metricsRow1.map((m, i) => (
           <MetricCard key={m.title} {...m} loading={row1Loading[i]} />
         ))}
@@ -411,33 +417,6 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function VolumeLevelsStrip({ volumeLevels }: { volumeLevels: VolumeLevelData[] }) {
-  return (
-    <div className="mx-3 sm:mx-4 mb-4 card p-3">
-      <h3 className="text-xs font-semibold text-slate-300 mb-3">
-        Volume Level (Top 5 Levels)
-      </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-        {volumeLevels.map(({ level, value, color }) => (
-          <div
-            key={level}
-            className="text-center p-2 rounded-lg bg-[#131a35] border border-[#1a2240]"
-          >
-            <Star
-              className="w-3.5 h-3.5 mx-auto mb-1"
-              style={{ color, fill: color }}
-            />
-            <p className="text-[9px] text-slate-500">{level}</p>
-            <p className="text-[9px] sm:text-[10px] font-bold text-white mt-0.5 break-all sm:break-normal">
-              {value}
-            </p>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -1162,7 +1141,6 @@ export default function Dashboard({
 
   const chartsLoading = loadingSections?.has("customer-stats");
   const purchaseLoading = loadingSections?.has("purchase-stats");
-  const volumeLoading = loadingSections?.has("volume-by-level");
   const anyLoading = loadingSections && loadingSections.size > 0;
 
   return (
@@ -1220,13 +1198,6 @@ export default function Dashboard({
           )}
         </div>
 
-        {volumeLoading ? (
-          <div className="mx-3 sm:mx-4 mb-4">
-            <SectionSkeleton label="Loading volume by level..." />
-          </div>
-        ) : (
-          <VolumeLevelsStrip volumeLevels={data.volumeLevels} />
-        )}
         <LazyRankProgressPanel
           key={`rank-progress-${selectedCustomerId ?? "self"}`}
           rankTabs={data.rankTabs}

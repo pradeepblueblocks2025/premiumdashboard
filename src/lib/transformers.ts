@@ -111,16 +111,22 @@ function buildMetrics(data: PremiumDashboardData): {
         icon: "users",
       },
       {
-        title: "Total Active MTHT Staking",
-        value: formatMtht(data.activeStaking.totalActiveMtht, true),
+        title: "Total Community Affiliation",
+        value: formatMtht(data.affiliateRewards.totalAffiliateRewards, true),
+        change: null,
+        icon: "affiliate",
+      },
+      {
+        title: "Staking Reward",
+        value: formatMtht(data.stakingRewards.totalStakingRewards, true),
         change: null,
         icon: "staking",
       },
       {
         title: "Withdrawals & Transfers",
-        value: formatUsd(
-          data.withdrawalAndTransfer.totalWithdrawalsUsd +
-            data.withdrawalAndTransfer.totalFundTransfersUsd,
+        value: formatMtht(
+          data.withdrawalAndTransfer.totalWithdrawals +
+            data.withdrawalAndTransfer.totalFundTransfers,
           true
         ),
         change: null,
