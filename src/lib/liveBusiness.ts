@@ -2,8 +2,8 @@ import { fetchBackendJson } from "./clientApi";
 import { withCustomerId } from "./format";
 import type {
   LiveBusinessData,
+  LiveBusinessPeriod,
   LiveBusinessPoint,
-  LiveBusinessRange,
 } from "./types";
 
 const LIVE_BUSINESS_PATH = "/api/v1/premium-dashboard/downline-live-business";
@@ -169,7 +169,7 @@ export function normalizeLiveBusiness(payload: unknown): LiveBusinessData {
 }
 
 export function liveBusinessPath(
-  range?: LiveBusinessRange,
+  range?: LiveBusinessPeriod,
   customerId?: string | null
 ): string {
   const path = range
@@ -179,7 +179,7 @@ export function liveBusinessPath(
 }
 
 export async function fetchLiveBusiness(
-  range?: LiveBusinessRange,
+  range?: LiveBusinessPeriod,
   customerId?: string | null
 ): Promise<LiveBusinessData> {
   const payload = await fetchBackendJson<unknown>(

@@ -216,6 +216,7 @@ export interface UserProfile {
 }
 
 export type LiveBusinessRange = "7days" | "month";
+export type LiveBusinessPeriod = LiveBusinessRange | "today" | "yesterday";
 
 export interface LiveBusinessPoint {
   label: string;

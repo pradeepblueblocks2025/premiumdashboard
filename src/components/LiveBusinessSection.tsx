@@ -55,6 +55,7 @@ export default function LiveBusinessSection({
 }) {
   const [range, setRange] = useState<LiveBusinessRange>("7days");
   const [today, setToday] = useState<LiveBusinessData | null>(null);
+  const [yesterday, setYesterday] = useState<LiveBusinessData | null>(null);
   const [week, setWeek] = useState<LiveBusinessData | null>(null);
   const [month, setMonth] = useState<LiveBusinessData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,8 +74,9 @@ export default function LiveBusinessSection({
       setError(null);
 
       try {
-        const [todayData, weekData, monthData] = await Promise.all([
+        const [todayData, yesterdayData, weekData, monthData] = await Promise.all([
           fetchLiveBusiness(undefined, customerId),
+          fetchLiveBusiness("yesterday", customerId),
           fetchLiveBusiness("7days", customerId),
           fetchLiveBusiness("month", customerId),
         ]);
@@ -101,6 +103,7 @@ export default function LiveBusinessSection({
         previousBusiness.current = next;
 
         setToday(todayData);
+        setYesterday(yesterdayData);
         setWeek(weekData);
         setMonth(monthData);
       } catch (err) {
@@ -200,6 +203,7 @@ export default function LiveBusinessSection({
               </span>
             </div>
             <div className="mt-4">
+              <StatRow label="Yesterday" data={yesterday} />
               <StatRow label="7 Days" data={week} />
               <StatRow label="This Month" data={month} />
             </div>
