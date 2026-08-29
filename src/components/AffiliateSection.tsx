@@ -66,7 +66,7 @@ export default function AffiliateSection({
 
       try {
         const [payload, monthPayload] = await Promise.all([
-          fetchAffiliateEarned(customerId),
+          fetchAffiliateEarned(customerId, "7days"),
           fetchAffiliateEarned(customerId, "month"),
         ]);
         if (signal?.cancelled) return;
