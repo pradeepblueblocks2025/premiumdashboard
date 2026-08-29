@@ -116,7 +116,7 @@ export default function AffiliateSection({
       <div className="card p-4">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 min-w-0">
-            <Activity className="w-3.5 h-3.5 text-amber-300" />
+            <Activity className="w-3.5 h-3.5 text-sky-300" />
             <h3 className="text-xs font-semibold text-slate-300 truncate">
               Community Affiliations
             </h3>
@@ -129,7 +129,7 @@ export default function AffiliateSection({
                 onClick={() => setRange(item.id)}
                 className={`px-2 py-1 text-[10px] rounded-md transition-colors ${
                   range === item.id
-                    ? "bg-amber-500/15 text-amber-200"
+                    ? "bg-sky-500/15 text-sky-200"
                     : "text-slate-500 hover:text-slate-300"
                 }`}
               >

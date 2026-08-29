@@ -84,23 +84,23 @@ export default function PremiumAffiliateChart({
       >
         <defs>
           <linearGradient id={`${uid}-velvet`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#2a1d0c" stopOpacity="0.35" />
-            <stop offset="55%" stopColor="#120d08" stopOpacity="0" />
-            <stop offset="100%" stopColor="#3a2a12" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#0c1d2a" stopOpacity="0.45" />
+            <stop offset="55%" stopColor="#080d12" stopOpacity="0" />
+            <stop offset="100%" stopColor="#12303a" stopOpacity="0.22" />
           </linearGradient>
           <linearGradient id={`${uid}-foil`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#fff3c4" />
-            <stop offset="38%" stopColor="#e8c36a" />
-            <stop offset="100%" stopColor="#8a6416" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#d9f4ff" />
+            <stop offset="38%" stopColor="#5ec8f2" />
+            <stop offset="100%" stopColor="#166a8a" stopOpacity="0.2" />
           </linearGradient>
           <linearGradient id={`${uid}-mountain`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f3d27a" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#f3d27a" stopOpacity="0" />
+            <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#7dd3fc" stopOpacity="0" />
           </linearGradient>
           <linearGradient id={`${uid}-metal`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#c9a227" />
-            <stop offset="45%" stopColor="#fff1c2" />
-            <stop offset="100%" stopColor="#d4a017" />
+            <stop offset="0%" stopColor="#38bdf8" />
+            <stop offset="45%" stopColor="#e0f7ff" />
+            <stop offset="100%" stopColor="#0284c7" />
           </linearGradient>
           <clipPath id={`${uid}-reveal`}>
             <rect x="0" y="0" height={HEIGHT} width="0">
@@ -130,13 +130,13 @@ export default function PremiumAffiliateChart({
               x2={WIDTH - PAD.right}
               y1={tick.y}
               y2={tick.y}
-              stroke="rgba(232, 195, 106, 0.12)"
+              stroke="rgba(94, 200, 242, 0.14)"
               strokeDasharray="3 5"
             />
             <text
               x={WIDTH - PAD.right + 8}
               y={tick.y + 3}
-              fill="#c9a84c"
+              fill="#7dd3fc"
               fontSize="9"
               opacity="0.8"
             >
@@ -197,8 +197,8 @@ export default function PremiumAffiliateChart({
               {showMark && point.value > 0 ? (
                 <polygon
                   points={`${point.x},${point.y - 4.2} ${point.x + 4.2},${point.y} ${point.x},${point.y + 4.2} ${point.x - 4.2},${point.y}`}
-                  fill={isLast ? "#fff6d8" : "#1a1208"}
-                  stroke={isLast ? "#e8c36a" : "#f3d27a"}
+                  fill={isLast ? "#e0f7ff" : "#071318"}
+                  stroke={isLast ? "#7dd3fc" : "#38bdf8"}
                   strokeWidth="1.2"
                 />
               ) : null}
@@ -207,7 +207,7 @@ export default function PremiumAffiliateChart({
                   x={point.x}
                   y={point.y + (dense && index % 2 === 1 ? 16 : -11)}
                   textAnchor="middle"
-                  fill="#fff6d8"
+                  fill="#e0f7ff"
                   fontSize={dense ? 8 : 10}
                   fontWeight={700}
                 >
@@ -219,7 +219,7 @@ export default function PremiumAffiliateChart({
                   x={point.x}
                   y={PAD.top + chart.plotH + 18}
                   textAnchor="middle"
-                  fill="#b8954a"
+                  fill="#7dd3e8"
                   fontSize={dense ? 8 : 9}
                 >
                   {point.label}
