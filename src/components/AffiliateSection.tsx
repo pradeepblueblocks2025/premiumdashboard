@@ -143,7 +143,7 @@ export default function AffiliateSection({
           <div className="flex items-center gap-2 min-w-0">
             <Activity className="w-3.5 h-3.5 text-sky-300" />
             <h3 className="text-xs font-semibold text-slate-300 truncate">
-              Community Affiliations
+              MY AFFILIATION
             </h3>
           </div>
           <div className="flex rounded-lg bg-[#131a35] border border-[#1a2240] p-0.5">
@@ -189,7 +189,7 @@ export default function AffiliateSection({
           <div className="flex items-center gap-2">
             <Users className="w-3.5 h-3.5 text-sky-300" />
             <h3 className="text-xs font-semibold text-slate-300">
-              Community Affiliations
+              MY AFFILIATION
             </h3>
           </div>
           <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400">

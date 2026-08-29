@@ -338,7 +338,7 @@ export default function AffiliateLegsPie({
 
       <div className="card p-4">
         <div className="flex items-center justify-between gap-2 mb-3">
-          <h3 className="text-xs font-semibold text-slate-300">Leg values</h3>
+          <h3 className="text-xs font-semibold text-slate-300">Affiliation by Leg</h3>
           {data ? (
             <div className="text-right">
               <p className="text-[10px] text-slate-500">

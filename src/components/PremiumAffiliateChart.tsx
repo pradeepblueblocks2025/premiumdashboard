@@ -8,7 +8,7 @@ type Point = { x: number; y: number; label: string; value: number };
 
 const WIDTH = 640;
 const HEIGHT = 290;
-const PAD = { top: 36, right: 50, bottom: 34, left: 14 };
+const PAD = { top: 36, right: 50, bottom: 34, left: 36 };
 
 function chartValue(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
@@ -80,7 +80,7 @@ export default function PremiumAffiliateChart({
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full h-[240px] sm:h-[270px]"
         role="img"
-        aria-label="Community affiliations chart"
+        aria-label="My affiliation chart"
       >
         <defs>
           <linearGradient id={`${uid}-velvet`} x1="0" y1="0" x2="1" y2="1">
@@ -122,6 +122,19 @@ export default function PremiumAffiliateChart({
           height={chart.plotH}
           fill={`url(#${uid}-velvet)`}
         />
+
+        <text
+          x={12}
+          y={PAD.top + chart.plotH / 2}
+          fill="#7dd3e8"
+          fontSize="10"
+          fontWeight={600}
+          letterSpacing="0.04em"
+          textAnchor="middle"
+          transform={`rotate(-90 12 ${PAD.top + chart.plotH / 2})`}
+        >
+          Daily Affiliation
+        </text>
 
         {chart.ticks.map((tick) => (
           <g key={tick.y}>
