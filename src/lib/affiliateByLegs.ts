@@ -1,8 +1,7 @@
 import { fetchBackendJson } from "./clientApi";
 import { withCustomerId } from "./format";
 
-const AFFILIATE_BY_LEGS_PATH =
-  "/api/v1/premium-dashboard/downline-affiliate-by-legs";
+const AFFILIATE_BY_LEGS_PATH = "/api/v1/premium-dashboard/affiliate-by-legs";
 
 export type AffiliateLeg = {
   legId: string;

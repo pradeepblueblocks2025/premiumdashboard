@@ -37,12 +37,22 @@ type PieSlice = {
   isPower: boolean;
 };
 
+function formatSharePercent(percent: number): string {
+  if (!Number.isFinite(percent) || percent <= 0) return "0%";
+  if (percent >= 100) return "100%";
+  if (percent >= 10) return `${percent.toFixed(2)}%`;
+  if (percent >= 1) return `${percent.toFixed(2)}%`;
+  if (percent >= 0.01) return `${percent.toFixed(2)}%`;
+  if (percent >= 0.001) return `${percent.toFixed(3)}%`;
+  return "<0.001%";
+}
+
 function buildSlices(
   legs: AffiliateLeg[],
-  total: number,
   powerLegId?: string
 ): PieSlice[] {
   const powerId = powerLegId ? String(powerLegId) : "";
+  const total = legs.reduce((sum, leg) => sum + leg.totalAffiliate, 0);
 
   return [...legs]
     .sort((a, b) => b.totalAffiliate - a.totalAffiliate)
@@ -70,7 +80,7 @@ function PieTooltip({
     <div className="rounded-lg border border-[#1a2240] bg-[#0a0f24] px-3 py-2 shadow-xl">
       <p className="text-[11px] font-semibold text-white">{slice.name}</p>
       <p className="text-[10px] text-slate-400 mt-0.5">
-        {formatMtht(slice.value, true)} · {slice.percent.toFixed(1)}%
+        {formatMtht(slice.value, true)} · {formatSharePercent(slice.percent)}
       </p>
     </div>
   );
@@ -117,11 +127,7 @@ export default function AffiliateLegsPie({
 
   const slices = useMemo(
     () =>
-      buildSlices(
-        data?.legs ?? [],
-        data?.totalAffiliate ?? 0,
-        data?.powerLeg?.legId
-      ),
+      buildSlices(data?.legs ?? [], data?.powerLeg?.legId),
     [data]
   );
   const pieSlices = useMemo(
@@ -223,8 +229,8 @@ export default function AffiliateLegsPie({
                 <span className="text-[10px] text-white font-medium shrink-0">
                   {formatMtht(slice.value, true)}
                 </span>
-                <span className="text-[10px] text-slate-500 w-10 text-right shrink-0">
-                  {slice.percent.toFixed(0)}%
+                <span className="text-[10px] text-slate-500 w-14 text-right shrink-0 tabular-nums">
+                  {formatSharePercent(slice.percent)}
                 </span>
               </div>
             ))}
