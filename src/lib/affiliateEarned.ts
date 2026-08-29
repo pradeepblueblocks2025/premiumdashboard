@@ -6,6 +6,9 @@ import type { LiveBusinessPoint, LiveBusinessRange } from "./types";
 const AFFILIATE_EARNED_PATH =
   "/api/v1/premium-dashboard/downline-affiliate-earned";
 
+const CUSTOMER_AFFILIATE_EARNED_PATH =
+  "/api/v1/premium-dashboard/customer-affiliate-earned";
+
 export type AffiliatePeriodSummary = {
   totalMtht: number;
   totalUsdt: number;
@@ -143,6 +146,26 @@ export async function fetchAffiliateEarned(
 ): Promise<AffiliateEarnedData> {
   const payload = await fetchBackendJson<unknown>(
     affiliateEarnedPath(customerId, range)
+  );
+  return normalizeAffiliateEarned(payload);
+}
+
+export function customerAffiliateEarnedPath(
+  customerId?: string | null,
+  range?: AffiliateChartRange
+): string {
+  const path = range
+    ? `${CUSTOMER_AFFILIATE_EARNED_PATH}?range=${encodeURIComponent(range)}`
+    : CUSTOMER_AFFILIATE_EARNED_PATH;
+  return withCustomerId(path, customerId);
+}
+
+export async function fetchCustomerAffiliateEarned(
+  customerId?: string | null,
+  range?: AffiliateChartRange
+): Promise<AffiliateEarnedData> {
+  const payload = await fetchBackendJson<unknown>(
+    customerAffiliateEarnedPath(customerId, range)
   );
   return normalizeAffiliateEarned(payload);
 }

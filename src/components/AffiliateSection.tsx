@@ -6,7 +6,7 @@ import {
   fillDailySeries,
 } from "@/lib/liveBusiness";
 import {
-  fetchAffiliateEarned,
+  fetchCustomerAffiliateEarned,
   type AffiliateEarnedData,
   type AffiliatePeriodSummary,
 } from "@/lib/affiliateEarned";
@@ -87,9 +87,9 @@ export default function AffiliateSection({
 
       try {
         const [payload, monthPayload, yesterdayPayload] = await Promise.all([
-          fetchAffiliateEarned(customerId, "7days"),
-          fetchAffiliateEarned(customerId, "month"),
-          fetchAffiliateEarned(customerId, "yesterday"),
+          fetchCustomerAffiliateEarned(customerId, "7days"),
+          fetchCustomerAffiliateEarned(customerId, "month"),
+          fetchCustomerAffiliateEarned(customerId, "yesterday"),
         ]);
         if (signal?.cancelled) return;
         setData({
@@ -102,7 +102,7 @@ export default function AffiliateSection({
         setError(
           err instanceof Error
             ? err.message
-            : "Failed to load community affiliations"
+            : "Failed to load my affiliation"
         );
       } finally {
         if (!signal?.cancelled && !silent) setLoading(false);
@@ -173,7 +173,7 @@ export default function AffiliateSection({
           <p className="text-xs text-red-400">{error}</p>
         ) : series.length === 0 ? (
           <p className="text-xs text-slate-500 text-center py-16">
-            No community affiliations yet
+            No affiliation yet
           </p>
         ) : (
           <PremiumAffiliateChart
