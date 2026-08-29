@@ -93,15 +93,6 @@ function buildMetrics(data: PremiumDashboardData): {
   row1: DashboardViewModel["metricsRow1"];
   row2: DashboardViewModel["metricsRow2"];
 } {
-  const nftVolumeUsd = data.nftsByPrice.reduce(
-    (sum, item) => sum + item.count * item.priceUsd,
-    0
-  );
-  const communityVolumeUsd = data.volumeByLevel.reduce(
-    (sum, item) => sum + item.totalUsd,
-    0
-  );
-
   return {
     row1: [
       {
@@ -133,20 +124,7 @@ function buildMetrics(data: PremiumDashboardData): {
         icon: "transfer",
       },
     ],
-    row2: [
-      {
-        title: "Total Community Volume",
-        value: formatUsd(communityVolumeUsd, true),
-        change: null,
-        icon: "volume",
-      },
-      {
-        title: "NFT Volume",
-        value: formatUsd(nftVolumeUsd, true),
-        change: null,
-        icon: "nft",
-      },
-    ],
+    row2: [],
   };
 }
 

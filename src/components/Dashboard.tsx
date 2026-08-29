@@ -269,15 +269,12 @@ function SectionSkeleton({ label }: { label: string }) {
 
 function StatsGrid({
   metricsRow1,
-  metricsRow2,
   loadingSections,
 }: {
   metricsRow1: MetricCardData[];
-  metricsRow2: MetricCardData[];
   loadingSections?: Set<string>;
 }) {
   const communityLoading = loadingSections?.has("community-users");
-  const purchaseLoading = loadingSections?.has("purchase-stats");
   const financialLoading = loadingSections?.has("financial-stats");
 
   const row1Loading = [
@@ -286,21 +283,12 @@ function StatsGrid({
     financialLoading,
     financialLoading,
   ];
-  const row2Loading = [
-    loadingSections?.has("volume-by-level"),
-    purchaseLoading,
-  ];
 
   return (
-    <div className="mx-3 sm:mx-4 mb-4 space-y-2">
+    <div className="mx-3 sm:mx-4 mb-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {metricsRow1.map((m, i) => (
           <MetricCard key={m.title} {...m} loading={row1Loading[i]} />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {metricsRow2.map((m, i) => (
-          <MetricCard key={m.title} {...m} loading={row2Loading[i]} />
         ))}
       </div>
     </div>
@@ -1172,7 +1160,6 @@ export default function Dashboard({
         <QuickActions />
         <StatsGrid
           metricsRow1={data.metricsRow1}
-          metricsRow2={data.metricsRow2}
           loadingSections={loadingSections}
         />
 
