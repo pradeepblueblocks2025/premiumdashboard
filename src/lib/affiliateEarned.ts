@@ -1,10 +1,31 @@
 import { fetchBackendJson } from "./clientApi";
 import { formatPointLabel } from "./liveBusiness";
 import { withCustomerId } from "./format";
-import type { LiveBusinessData, LiveBusinessPoint, LiveBusinessRange } from "./types";
+import type { LiveBusinessPoint } from "./types";
 
 const AFFILIATE_EARNED_PATH =
   "/api/v1/premium-dashboard/downline-affiliate-earned";
+
+export type AffiliatePeriodSummary = {
+  totalMtht: number;
+  totalUsdt: number;
+  count: number;
+};
+
+export type AffiliateEarnedData = {
+  today: AffiliatePeriodSummary;
+  yesterday: AffiliatePeriodSummary;
+  week: AffiliatePeriodSummary;
+  month: AffiliatePeriodSummary;
+  series: LiveBusinessPoint[];
+  conversionRatio?: number;
+};
+
+const EMPTY_PERIOD: AffiliatePeriodSummary = {
+  totalMtht: 0,
+  totalUsdt: 0,
+  count: 0,
+};
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -29,12 +50,21 @@ function stringField(obj: Record<string, unknown>, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
-function chartArray(record: Record<string, unknown>): unknown[] {
-  for (const key of ["chart", "series", "daily", "points", "graph"]) {
-    const value = record[key];
-    if (Array.isArray(value)) return value;
-  }
-  return [];
+function normalizePeriod(value: unknown): AffiliatePeriodSummary {
+  const record = asRecord(value);
+  if (!record) return EMPTY_PERIOD;
+
+  return {
+    totalMtht: numberField(record, "totalAffiliate", "totalMtht", "mtht"),
+    totalUsdt: numberField(
+      record,
+      "totalAffiliateUsd",
+      "totalUsdt",
+      "totalUsd",
+      "usdt"
+    ),
+    count: numberField(record, "count", "totalAffiliates", "affiliateCount"),
+  };
 }
 
 function normalizePoint(item: unknown, index: number): LiveBusinessPoint | null {
@@ -45,93 +75,44 @@ function normalizePoint(item: unknown, index: number): LiveBusinessPoint | null 
   return {
     date,
     label: formatPointLabel(date),
-    mtht: numberField(
-      record,
-      "totalMtht",
-      "mtht",
-      "earnedMtht",
-      "totalAffiliateRewards",
-      "earned",
-      "amount"
-    ),
+    mtht: numberField(record, "totalAffiliate", "totalMtht", "mtht"),
     usdt: numberField(
       record,
+      "totalAffiliateUsd",
       "totalUsdt",
       "totalUsd",
-      "usdt",
-      "usd",
-      "totalAffiliateRewardsUsd",
-      "earnedUsdt"
+      "usdt"
     ),
-    nftPurchased: numberField(
-      record,
-      "totalAffiliates",
-      "affiliateCount",
-      "count",
-      "totalCount",
-      "totalNftPurchased",
-      "nftPurchased"
-    ),
+    nftPurchased: numberField(record, "count"),
   };
 }
 
-export function normalizeAffiliateEarned(payload: unknown): LiveBusinessData {
+export function normalizeAffiliateEarned(payload: unknown): AffiliateEarnedData {
   const record = asRecord(payload) ?? {};
+  const chart = Array.isArray(record.chart) ? record.chart : [];
+  const conversionRatio = numberField(record, "conversionRatio");
 
   return {
-    range: stringField(record, "range") || undefined,
-    summary: {
-      range: stringField(record, "range") || undefined,
-      startDate: stringField(record, "startDate") || undefined,
-      endDate: stringField(record, "endDate") || undefined,
-      totalMtht: numberField(
-        record,
-        "totalMtht",
-        "earnedMtht",
-        "totalAffiliateRewards",
-        "earned",
-        "amount"
-      ),
-      totalUsdt: numberField(
-        record,
-        "totalUsdt",
-        "totalUsd",
-        "totalAffiliateRewardsUsd",
-        "earnedUsdt",
-        "usdt",
-        "usd"
-      ),
-      totalNftPurchased: numberField(
-        record,
-        "totalAffiliates",
-        "affiliateCount",
-        "count",
-        "totalCount",
-        "totalNftPurchased"
-      ),
-    },
-    series: chartArray(record)
+    today: normalizePeriod(record.today),
+    yesterday: normalizePeriod(record.yesterday),
+    week: normalizePeriod(record["7days"] ?? record.week),
+    month: normalizePeriod(record.month),
+    series: chart
       .map(normalizePoint)
       .filter((point): point is LiveBusinessPoint => point !== null),
+    conversionRatio: conversionRatio || undefined,
   };
 }
 
-export function affiliateEarnedPath(
-  range?: LiveBusinessRange,
-  customerId?: string | null
-): string {
-  const path = range
-    ? `${AFFILIATE_EARNED_PATH}?range=${encodeURIComponent(range)}`
-    : AFFILIATE_EARNED_PATH;
-  return withCustomerId(path, customerId);
+export function affiliateEarnedPath(customerId?: string | null): string {
+  return withCustomerId(AFFILIATE_EARNED_PATH, customerId);
 }
 
 export async function fetchAffiliateEarned(
-  range?: LiveBusinessRange,
   customerId?: string | null
-): Promise<LiveBusinessData> {
+): Promise<AffiliateEarnedData> {
   const payload = await fetchBackendJson<unknown>(
-    affiliateEarnedPath(range, customerId)
+    affiliateEarnedPath(customerId)
   );
   return normalizeAffiliateEarned(payload);
 }

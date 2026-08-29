@@ -1,13 +1,13 @@
 "use client";
 
+import { clipSeriesThroughToday } from "@/lib/liveBusiness";
 import {
-  calendarMonthRange,
-  clipSeriesThroughToday,
-  fillDailySeries,
-} from "@/lib/liveBusiness";
-import { fetchAffiliateEarned } from "@/lib/affiliateEarned";
+  fetchAffiliateEarned,
+  type AffiliateEarnedData,
+  type AffiliatePeriodSummary,
+} from "@/lib/affiliateEarned";
 import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
-import type { LiveBusinessData, LiveBusinessRange } from "@/lib/types";
+import type { LiveBusinessRange } from "@/lib/types";
 import { Activity, Loader2, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import NeonLiveChart from "@/components/NeonLiveChart";
@@ -21,23 +21,23 @@ const RANGES: Array<{ id: LiveBusinessRange; label: string }> = [
 
 function StatRow({
   label,
-  data,
+  period,
 }: {
   label: string;
-  data?: LiveBusinessData | null;
+  period?: AffiliatePeriodSummary | null;
 }) {
-  if (!data) return null;
+  if (!period) return null;
 
   return (
     <div className="flex items-start justify-between gap-3 py-1.5 border-t border-[#1a2240]">
       <span className="text-[11px] text-slate-400 mt-0.5">{label}</span>
       <div className="text-right">
         <p className="text-xs font-semibold text-white">
-          {formatMtht(data.summary.totalMtht, true)}
+          {formatMtht(period.totalMtht, true)}
         </p>
         <p className="text-[10px] text-slate-500">
-          {formatUsd(data.summary.totalUsdt, true)} ·{" "}
-          {formatNumber(data.summary.totalNftPurchased, 0)} Affiliates
+          {formatUsd(period.totalUsdt, true)} ·{" "}
+          {formatNumber(period.count, 0)} Affiliates
         </p>
       </div>
     </div>
@@ -50,9 +50,7 @@ export default function AffiliateSection({
   customerId?: string | null;
 }) {
   const [range, setRange] = useState<LiveBusinessRange>("7days");
-  const [today, setToday] = useState<LiveBusinessData | null>(null);
-  const [week, setWeek] = useState<LiveBusinessData | null>(null);
-  const [month, setMonth] = useState<LiveBusinessData | null>(null);
+  const [data, setData] = useState<AffiliateEarnedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,17 +60,9 @@ export default function AffiliateSection({
       setError(null);
 
       try {
-        const [todayData, weekData, monthData] = await Promise.all([
-          fetchAffiliateEarned(undefined, customerId),
-          fetchAffiliateEarned("7days", customerId),
-          fetchAffiliateEarned("month", customerId),
-        ]);
-
+        const payload = await fetchAffiliateEarned(customerId);
         if (signal?.cancelled) return;
-
-        setToday(todayData);
-        setWeek(weekData);
-        setMonth(monthData);
+        setData(payload);
       } catch (err) {
         if (signal?.cancelled) return;
         setError(
@@ -102,13 +92,10 @@ export default function AffiliateSection({
     };
   }, [load]);
 
-  const chart = range === "month" ? month : week;
-  const monthBounds = calendarMonthRange();
+  const allSeries = clipSeriesThroughToday(data?.series ?? []);
   const series =
-    range === "month" && month
-      ? fillDailySeries(month.series, monthBounds.start, monthBounds.end)
-      : clipSeriesThroughToday(week?.series ?? []);
-  const denseLabels = range === "month";
+    range === "7days" ? allSeries.slice(-7) : allSeries;
+  const denseLabels = range === "month" && series.length > 10;
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -126,29 +113,29 @@ export default function AffiliateSection({
           </span>
         </div>
 
-        {loading && !today ? (
+        {loading && !data ? (
           <div className="flex flex-col items-center justify-center min-h-[140px] gap-2">
             <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
             <p className="text-[10px] text-slate-500">Loading affiliations...</p>
           </div>
-        ) : error && !today ? (
+        ) : error && !data ? (
           <p className="text-xs text-red-400">{error}</p>
         ) : (
           <>
             <p className="text-[10px] text-slate-500 mb-1">Today</p>
             <p className="text-2xl font-bold break-all gradient-text">
-              {formatMtht(today?.summary.totalMtht ?? 0)}
+              {formatMtht(data?.today.totalMtht ?? 0)}
             </p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-slate-400">
-              <span>{formatUsd(today?.summary.totalUsdt ?? 0)}</span>
+              <span>{formatUsd(data?.today.totalUsdt ?? 0)}</span>
               <span className="inline-flex items-center gap-1">
                 <Users className="w-3 h-3" />
-                {formatNumber(today?.summary.totalNftPurchased ?? 0, 0)} Affiliates
+                {formatNumber(data?.today.count ?? 0, 0)} Affiliates
               </span>
             </div>
             <div className="mt-4">
-              <StatRow label="7 Days" data={week} />
-              <StatRow label="This Month" data={month} />
+              <StatRow label="7 Days" period={data?.week} />
+              <StatRow label="This Month" period={data?.month} />
             </div>
           </>
         )}
@@ -180,12 +167,12 @@ export default function AffiliateSection({
           </div>
         </div>
 
-        {loading && !chart ? (
+        {loading && !data ? (
           <div className="flex flex-col items-center justify-center min-h-[220px] gap-2">
             <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
             <p className="text-[10px] text-slate-500">Loading graph...</p>
           </div>
-        ) : error && !chart ? (
+        ) : error && !data ? (
           <p className="text-xs text-red-400">{error}</p>
         ) : series.length === 0 ? (
           <p className="text-xs text-slate-500 text-center py-16">
@@ -193,7 +180,7 @@ export default function AffiliateSection({
           </p>
         ) : (
           <NeonLiveChart
-            key={range}
+            key={`${range}-${series.length}`}
             series={series}
             dense={denseLabels}
             ariaLabel="Live community affiliations chart"
