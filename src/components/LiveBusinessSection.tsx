@@ -1,17 +1,23 @@
 "use client";
 
+import { fetchAffiliateEarned } from "@/lib/affiliateEarned";
 import {
   calendarMonthRange,
   clipSeriesThroughToday,
   fetchLiveBusiness,
   fillDailySeries,
+  volumeBarTones,
 } from "@/lib/liveBusiness";
 import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
 import {
   playNewBusinessSound,
   unlockNotificationAudio,
 } from "@/lib/notifySound";
-import type { LiveBusinessData, LiveBusinessRange } from "@/lib/types";
+import type {
+  LiveBusinessData,
+  LiveBusinessPoint,
+  LiveBusinessRange,
+} from "@/lib/types";
 import { Activity, ImageIcon, Loader2, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NeonLiveChart from "@/components/NeonLiveChart";
@@ -58,6 +64,8 @@ export default function LiveBusinessSection({
   const [yesterday, setYesterday] = useState<LiveBusinessData | null>(null);
   const [week, setWeek] = useState<LiveBusinessData | null>(null);
   const [month, setMonth] = useState<LiveBusinessData | null>(null);
+  const [weekAffiliate, setWeekAffiliate] = useState<LiveBusinessPoint[]>([]);
+  const [monthAffiliate, setMonthAffiliate] = useState<LiveBusinessPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [justNotified, setJustNotified] = useState(false);
@@ -74,11 +82,20 @@ export default function LiveBusinessSection({
       setError(null);
 
       try {
-        const [todayData, yesterdayData, weekData, monthData] = await Promise.all([
+        const [
+          todayData,
+          yesterdayData,
+          weekData,
+          monthData,
+          weekAffiliateData,
+          monthAffiliateData,
+        ] = await Promise.all([
           fetchLiveBusiness(undefined, customerId),
           fetchLiveBusiness("yesterday", customerId),
           fetchLiveBusiness("7days", customerId),
           fetchLiveBusiness("month", customerId),
+          fetchAffiliateEarned(customerId, "7days").catch(() => null),
+          fetchAffiliateEarned(customerId, "month").catch(() => null),
         ]);
 
         if (signal?.cancelled) return;
@@ -106,6 +123,8 @@ export default function LiveBusinessSection({
         setYesterday(yesterdayData);
         setWeek(weekData);
         setMonth(monthData);
+        setWeekAffiliate(weekAffiliateData?.series ?? []);
+        setMonthAffiliate(monthAffiliateData?.series ?? []);
       } catch (err) {
         if (signal?.cancelled) return;
         setError(
@@ -152,6 +171,11 @@ export default function LiveBusinessSection({
     range === "month" && month
       ? fillDailySeries(month.series, monthBounds.start, monthBounds.end)
       : clipSeriesThroughToday(week?.series ?? []);
+  const affiliateSeries =
+    range === "month"
+      ? clipSeriesThroughToday(monthAffiliate)
+      : clipSeriesThroughToday(weekAffiliate);
+  const barTones = volumeBarTones(series, affiliateSeries);
   const denseLabels = range === "month";
 
   return (
@@ -249,11 +273,24 @@ export default function LiveBusinessSection({
             No live community business yet
           </p>
         ) : (
-          <NeonLiveChart
-            key={range}
-            series={series}
-            dense={denseLabels}
-          />
+          <>
+            <NeonLiveChart
+              key={range}
+              series={series}
+              dense={denseLabels}
+              barTones={barTones}
+            />
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-3 text-[10px] text-slate-500">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-sm bg-emerald-400" />
+                Affiliate higher
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-sm bg-red-400" />
+                Business higher
+              </span>
+            </div>
+          </>
         )}
       </div>
     </div>

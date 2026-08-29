@@ -1,6 +1,7 @@
 "use client";
 
 import { formatNumber } from "@/lib/format";
+import type { VolumeBarTone } from "@/lib/liveBusiness";
 import type { LiveBusinessPoint } from "@/lib/types";
 import { useId, useMemo } from "react";
 
@@ -81,16 +82,34 @@ const CHART_TONES = {
   },
 } as const;
 
+const COMPARE_BARS: Record<
+  Exclude<VolumeBarTone, "cyan">,
+  { top: string; bottom: string; stroke: string }
+> = {
+  green: {
+    top: "#6ee7b7",
+    bottom: "#059669",
+    stroke: "rgba(110, 231, 183, 0.55)",
+  },
+  red: {
+    top: "#fca5a5",
+    bottom: "#dc2626",
+    stroke: "rgba(252, 165, 165, 0.55)",
+  },
+};
+
 export default function NeonLiveChart({
   series,
   dense = false,
   ariaLabel = "Live community business chart",
   tone = "cyan",
+  barTones,
 }: {
   series: LiveBusinessPoint[];
   dense?: boolean;
   ariaLabel?: string;
   tone?: keyof typeof CHART_TONES;
+  barTones?: VolumeBarTone[];
 }) {
   const palette = CHART_TONES[tone];
   const uid = useId().replace(/:/g, "");
@@ -162,6 +181,14 @@ export default function NeonLiveChart({
             <stop offset="0%" stopColor={palette.barTop} stopOpacity="0.55" />
             <stop offset="100%" stopColor={palette.barBottom} stopOpacity="0.08" />
           </linearGradient>
+          <linearGradient id={`${uid}-bar-green`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={COMPARE_BARS.green.top} stopOpacity="0.7" />
+            <stop offset="100%" stopColor={COMPARE_BARS.green.bottom} stopOpacity="0.12" />
+          </linearGradient>
+          <linearGradient id={`${uid}-bar-red`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={COMPARE_BARS.red.top} stopOpacity="0.7" />
+            <stop offset="100%" stopColor={COMPARE_BARS.red.bottom} stopOpacity="0.12" />
+          </linearGradient>
           <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="3.5" result="blur" />
             <feMerge>
@@ -209,6 +236,8 @@ export default function NeonLiveChart({
         {chart.points.map((point, index) => {
           if (point.value <= 0) return null;
           const barH = PAD.top + chart.plotH - point.y;
+          const barTone = barTones?.[index] ?? "cyan";
+          const compare = barTone === "cyan" ? null : COMPARE_BARS[barTone];
           return (
             <rect
               key={`bar-${point.label}-${index}`}
@@ -218,8 +247,8 @@ export default function NeonLiveChart({
               width={barWidth}
               height={Math.max(barH, 2)}
               rx={2}
-              fill={`url(#${uid}-bar)`}
-              stroke={palette.barStroke}
+              fill={`url(#${uid}-bar${barTone === "cyan" ? "" : `-${barTone}`})`}
+              stroke={compare?.stroke ?? palette.barStroke}
               strokeWidth="0.8"
               style={{
                 animationDelay: `${0.08 + index * Math.min(0.08, 1.4 / series.length)}s`,

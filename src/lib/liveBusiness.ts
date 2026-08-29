@@ -39,7 +39,7 @@ function formatYmd(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
-function toLocalYmd(raw: string): string | null {
+export function toLocalYmd(raw: string): string | null {
   const trimmed = raw.trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
 
@@ -49,6 +49,27 @@ function toLocalYmd(raw: string): string | null {
   }
 
   return null;
+}
+
+export type VolumeBarTone = "green" | "red" | "cyan";
+
+export function volumeBarTones(
+  business: LiveBusinessPoint[],
+  affiliates: LiveBusinessPoint[]
+): VolumeBarTone[] {
+  const affiliateByDate = new Map<string, number>();
+  for (const point of affiliates) {
+    affiliateByDate.set(toLocalYmd(point.date) ?? point.date, point.mtht);
+  }
+
+  return business.map((point) => {
+    const key = toLocalYmd(point.date) ?? point.date;
+    if (!affiliateByDate.has(key)) return "cyan";
+    const affiliate = affiliateByDate.get(key) ?? 0;
+    if (affiliate > point.mtht) return "green";
+    if (affiliate < point.mtht) return "red";
+    return "cyan";
+  });
 }
 
 export function formatPointLabel(raw: string): string {

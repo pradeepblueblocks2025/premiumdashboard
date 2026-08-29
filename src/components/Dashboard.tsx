@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Bell,
-  Menu,
   ArrowDownToLine,
   ArrowUpFromLine,
   Layers,
@@ -116,12 +114,6 @@ function Header({
           title="Sign out"
         >
           <LogOut className="w-4 h-4 text-slate-400" />
-        </button>
-        <button className="w-9 h-9 rounded-full bg-[#131a35] border border-[#1a2240] flex items-center justify-center hover:bg-[#1a2240] transition-colors">
-          <Bell className="w-4 h-4 text-slate-400" />
-        </button>
-        <button className="w-9 h-9 rounded-full bg-[#131a35] border border-[#1a2240] flex items-center justify-center hover:bg-[#1a2240] transition-colors">
-          <Menu className="w-4 h-4 text-slate-400" />
         </button>
       </div>
     </header>
