@@ -66,8 +66,8 @@ export function volumeBarTones(
     const key = toLocalYmd(point.date) ?? point.date;
     if (!affiliateByDate.has(key)) return "cyan";
     const affiliate = affiliateByDate.get(key) ?? 0;
-    if (affiliate > point.mtht) return "green";
-    if (affiliate < point.mtht) return "red";
+    if (point.mtht > affiliate) return "green";
+    if (point.mtht < affiliate) return "red";
     return "cyan";
   });
 }

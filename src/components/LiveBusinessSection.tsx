@@ -283,11 +283,11 @@ export default function LiveBusinessSection({
             <div className="mt-2 flex flex-wrap items-center justify-center gap-3 text-[10px] text-slate-500">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-sm bg-emerald-400" />
-                Affiliate higher
+                Business higher
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-sm bg-red-400" />
-                Business higher
+                Affiliate higher
               </span>
             </div>
           </>
