@@ -1,7 +1,7 @@
 import { fetchBackendJson } from "./clientApi";
 import { formatPointLabel } from "./liveBusiness";
 import { withCustomerId } from "./format";
-import type { LiveBusinessPoint } from "./types";
+import type { LiveBusinessPoint, LiveBusinessRange } from "./types";
 
 const AFFILIATE_EARNED_PATH =
   "/api/v1/premium-dashboard/downline-affiliate-earned";
@@ -104,15 +104,22 @@ export function normalizeAffiliateEarned(payload: unknown): AffiliateEarnedData 
   };
 }
 
-export function affiliateEarnedPath(customerId?: string | null): string {
-  return withCustomerId(AFFILIATE_EARNED_PATH, customerId);
+export function affiliateEarnedPath(
+  customerId?: string | null,
+  range?: LiveBusinessRange
+): string {
+  const path = range
+    ? `${AFFILIATE_EARNED_PATH}?range=${encodeURIComponent(range)}`
+    : AFFILIATE_EARNED_PATH;
+  return withCustomerId(path, customerId);
 }
 
 export async function fetchAffiliateEarned(
-  customerId?: string | null
+  customerId?: string | null,
+  range?: LiveBusinessRange
 ): Promise<AffiliateEarnedData> {
   const payload = await fetchBackendJson<unknown>(
-    affiliateEarnedPath(customerId)
+    affiliateEarnedPath(customerId, range)
   );
   return normalizeAffiliateEarned(payload);
 }

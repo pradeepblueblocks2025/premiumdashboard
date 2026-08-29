@@ -1,13 +1,17 @@
 "use client";
 
-import { clipSeriesThroughToday } from "@/lib/liveBusiness";
+import {
+  calendarMonthRange,
+  clipSeriesThroughToday,
+  fillDailySeries,
+} from "@/lib/liveBusiness";
 import {
   fetchAffiliateEarned,
   type AffiliateEarnedData,
   type AffiliatePeriodSummary,
 } from "@/lib/affiliateEarned";
 import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
-import type { LiveBusinessRange } from "@/lib/types";
+import type { LiveBusinessPoint, LiveBusinessRange } from "@/lib/types";
 import { Activity, Loader2, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import NeonLiveChart from "@/components/NeonLiveChart";
@@ -51,6 +55,7 @@ export default function AffiliateSection({
 }) {
   const [range, setRange] = useState<LiveBusinessRange>("7days");
   const [data, setData] = useState<AffiliateEarnedData | null>(null);
+  const [monthSeries, setMonthSeries] = useState<LiveBusinessPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,9 +65,13 @@ export default function AffiliateSection({
       setError(null);
 
       try {
-        const payload = await fetchAffiliateEarned(customerId);
+        const [payload, monthPayload] = await Promise.all([
+          fetchAffiliateEarned(customerId),
+          fetchAffiliateEarned(customerId, "month").catch(() => null),
+        ]);
         if (signal?.cancelled) return;
         setData(payload);
+        setMonthSeries(monthPayload?.series ?? payload.series);
       } catch (err) {
         if (signal?.cancelled) return;
         setError(
@@ -92,19 +101,24 @@ export default function AffiliateSection({
     };
   }, [load]);
 
-  const allSeries = clipSeriesThroughToday(data?.series ?? []);
-  const series =
-    range === "7days" ? allSeries.slice(-7) : allSeries;
-  const denseLabels = range === "month" && series.length > 10;
+  const weekSeries = clipSeriesThroughToday(data?.series ?? []).slice(-7);
+  const monthBounds = calendarMonthRange();
+  const monthChart = fillDailySeries(
+    monthSeries.length > 0 ? monthSeries : (data?.series ?? []),
+    monthBounds.start,
+    monthBounds.end
+  );
+  const series = range === "month" ? monthChart : weekSeries;
+  const denseLabels = range === "month";
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
       <div className="card p-4">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 min-w-0">
-            <Activity className="w-3.5 h-3.5 text-cyan-400" />
+            <Activity className="w-3.5 h-3.5 text-amber-300" />
             <h3 className="text-xs font-semibold text-slate-300 truncate">
-              Live Community Affiliations
+              Community Affiliations
             </h3>
           </div>
           <div className="flex rounded-lg bg-[#131a35] border border-[#1a2240] p-0.5">
@@ -115,7 +129,7 @@ export default function AffiliateSection({
                 onClick={() => setRange(item.id)}
                 className={`px-2 py-1 text-[10px] rounded-md transition-colors ${
                   range === item.id
-                    ? "bg-violet-500/20 text-violet-300"
+                    ? "bg-amber-500/15 text-amber-200"
                     : "text-slate-500 hover:text-slate-300"
                 }`}
               >
@@ -141,8 +155,8 @@ export default function AffiliateSection({
             key={`${range}-${series.length}`}
             series={series}
             dense={denseLabels}
-            tone="violet"
-            ariaLabel="Live community affiliations chart"
+            tone="gold"
+            ariaLabel="Community affiliations chart"
           />
         )}
       </div>

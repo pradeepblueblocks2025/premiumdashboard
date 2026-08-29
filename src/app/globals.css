@@ -79,10 +79,10 @@ body {
     linear-gradient(180deg, rgba(4, 16, 32, 0.4), rgba(4, 10, 24, 0.9));
 }
 
-.neon-live-chart--violet {
+.neon-live-chart--gold {
   background:
-    radial-gradient(120% 80% at 80% 0%, rgba(167, 139, 250, 0.16), transparent 55%),
-    linear-gradient(180deg, rgba(16, 8, 32, 0.45), rgba(8, 6, 20, 0.9));
+    radial-gradient(120% 80% at 80% 0%, rgba(232, 195, 106, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(24, 16, 6, 0.5), rgba(10, 8, 4, 0.92));
 }
 
 .neon-line-draw {

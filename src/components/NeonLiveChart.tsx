@@ -61,23 +61,23 @@ const CHART_TONES = {
     arrow: "#67f6ff",
     tick: "#67f6ff",
   },
-  violet: {
-    fillTop: "#d8b4fe",
-    fillMid: "#a78bfa",
-    barTop: "#e9d5ff",
-    barBottom: "#8b5cf6",
-    barStroke: "rgba(196, 181, 253, 0.5)",
-    gridH: "rgba(167, 139, 250, 0.1)",
-    gridV: "rgba(167, 139, 250, 0.07)",
-    lineSoft: "#c4b5fd",
-    line: "#f3e8ff",
-    dotFill: "#14081f",
-    dotStroke: "#ede9fe",
-    value: "#f5f3ff",
-    valueGlow: "#c4b5fd",
-    date: "#c4b5fd",
-    arrow: "#c4b5fd",
-    tick: "#c4b5fd",
+  gold: {
+    fillTop: "#f3d27a",
+    fillMid: "#d4a017",
+    barTop: "#ffe9a8",
+    barBottom: "#b8860b",
+    barStroke: "rgba(243, 210, 122, 0.5)",
+    gridH: "rgba(232, 195, 106, 0.1)",
+    gridV: "rgba(232, 195, 106, 0.06)",
+    lineSoft: "#e8c36a",
+    line: "#fff1c2",
+    dotFill: "#1a1208",
+    dotStroke: "#fff6d8",
+    value: "#fff6d8",
+    valueGlow: "#e8c36a",
+    date: "#d4b86a",
+    arrow: "#f3d27a",
+    tick: "#e8c36a",
   },
 } as const;
 
@@ -143,7 +143,7 @@ export default function NeonLiveChart({
   return (
     <div
       className={`neon-live-chart relative overflow-hidden rounded-lg${
-        tone === "violet" ? " neon-live-chart--violet" : ""
+        tone === "gold" ? " neon-live-chart--gold" : ""
       }`}
     >
       <svg
