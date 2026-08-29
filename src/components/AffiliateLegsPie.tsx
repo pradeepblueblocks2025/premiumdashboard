@@ -10,8 +10,6 @@ import { Crown, Loader2, PieChart as PieIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
-const MAX_SLICES = 8;
-
 const SLICE_COLORS = [
   "#fbbf24",
   "#38bdf8",
@@ -21,7 +19,13 @@ const SLICE_COLORS = [
   "#fb923c",
   "#22d3ee",
   "#818cf8",
-  "#64748b",
+  "#e879f9",
+  "#2dd4bf",
+  "#f87171",
+  "#60a5fa",
+  "#c084fc",
+  "#4ade80",
+  "#facc15",
 ];
 
 type PieSlice = {
@@ -31,7 +35,6 @@ type PieSlice = {
   percent: number;
   color: string;
   isPower: boolean;
-  isOthers: boolean;
 };
 
 function buildSlices(
@@ -39,40 +42,18 @@ function buildSlices(
   total: number,
   powerLegId?: string
 ): PieSlice[] {
-  const ranked = [...legs]
-    .filter((leg) => leg.totalAffiliate > 0)
-    .sort((a, b) => b.totalAffiliate - a.totalAffiliate);
+  const powerId = powerLegId ? String(powerLegId) : "";
 
-  const visible =
-    ranked.length > MAX_SLICES
-      ? ranked.slice(0, MAX_SLICES - 1)
-      : ranked;
-  const hidden = ranked.length > MAX_SLICES ? ranked.slice(MAX_SLICES - 1) : [];
-
-  const slices: PieSlice[] = visible.map((leg, index) => ({
-    key: leg.legId || `${leg.name}-${index}`,
-    name: leg.name,
-    value: leg.totalAffiliate,
-    percent: total > 0 ? (leg.totalAffiliate / total) * 100 : 0,
-    color: SLICE_COLORS[index % SLICE_COLORS.length],
-    isPower: !!powerLegId && leg.legId === powerLegId,
-    isOthers: false,
-  }));
-
-  if (hidden.length > 0) {
-    const othersValue = hidden.reduce((sum, leg) => sum + leg.totalAffiliate, 0);
-    slices.push({
-      key: "others",
-      name: `Others (${hidden.length} legs)`,
-      value: othersValue,
-      percent: total > 0 ? (othersValue / total) * 100 : 0,
-      color: SLICE_COLORS[SLICE_COLORS.length - 1],
-      isPower: false,
-      isOthers: true,
-    });
-  }
-
-  return slices;
+  return [...legs]
+    .sort((a, b) => b.totalAffiliate - a.totalAffiliate)
+    .map((leg, index) => ({
+      key: String(leg.legId || `${leg.name}-${index}`),
+      name: leg.name,
+      value: leg.totalAffiliate,
+      percent: total > 0 ? (leg.totalAffiliate / total) * 100 : 0,
+      color: SLICE_COLORS[index % SLICE_COLORS.length],
+      isPower: !!powerId && String(leg.legId) === powerId,
+    }));
 }
 
 function PieTooltip({
@@ -143,6 +124,10 @@ export default function AffiliateLegsPie({
       ),
     [data]
   );
+  const pieSlices = useMemo(
+    () => slices.filter((slice) => slice.value > 0),
+    [slices]
+  );
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 card p-4">
@@ -188,27 +173,30 @@ export default function AffiliateLegsPie({
           No affiliation by legs yet
         </p>
       ) : (
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="relative w-44 h-44 sm:w-40 sm:h-40 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          <div className="relative w-44 h-44 sm:w-40 sm:h-40 flex-shrink-0 mx-auto sm:mx-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={slices}
+                  data={pieSlices.length > 0 ? pieSlices : [{ name: "None", value: 1, color: "#1a2240" }]}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
                   cy="50%"
                   innerRadius={48}
                   outerRadius={72}
-                  paddingAngle={2}
+                  paddingAngle={pieSlices.length > 12 ? 0.4 : 2}
                   stroke="#0a0f24"
-                  strokeWidth={2}
+                  strokeWidth={1}
                 >
-                  {slices.map((slice) => (
+                  {(pieSlices.length > 0
+                    ? pieSlices
+                    : [{ key: "empty", color: "#1a2240" }]
+                  ).map((slice) => (
                     <Cell key={slice.key} fill={slice.color} />
                   ))}
                 </Pie>
-                <Tooltip content={<PieTooltip />} />
+                {pieSlices.length > 0 ? <Tooltip content={<PieTooltip />} /> : null}
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -219,7 +207,7 @@ export default function AffiliateLegsPie({
             </div>
           </div>
 
-          <div className="w-full sm:flex-1 space-y-1.5 max-h-44 overflow-y-auto scrollbar-hide">
+          <div className="w-full sm:flex-1 space-y-1.5 max-h-56 overflow-y-auto scrollbar-hide">
             {slices.map((slice) => (
               <div key={slice.key} className="flex items-center gap-2 min-w-0">
                 <div
