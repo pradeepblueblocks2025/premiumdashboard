@@ -42,15 +42,57 @@ function arrowAngle(points: Point[]): number {
   return (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
 }
 
+const CHART_TONES = {
+  cyan: {
+    fillTop: "#67f6ff",
+    fillMid: "#00d4ff",
+    barTop: "#7af8ff",
+    barBottom: "#00c8ff",
+    barStroke: "rgba(103, 246, 255, 0.45)",
+    gridH: "rgba(0, 220, 255, 0.08)",
+    gridV: "rgba(0, 220, 255, 0.06)",
+    lineSoft: "#67f6ff",
+    line: "#b8ffff",
+    dotFill: "#04131c",
+    dotStroke: "#d9ffff",
+    value: "#e7ffff",
+    valueGlow: "#67f6ff",
+    date: "#7dd3e8",
+    arrow: "#67f6ff",
+    tick: "#67f6ff",
+  },
+  violet: {
+    fillTop: "#d8b4fe",
+    fillMid: "#a78bfa",
+    barTop: "#e9d5ff",
+    barBottom: "#8b5cf6",
+    barStroke: "rgba(196, 181, 253, 0.5)",
+    gridH: "rgba(167, 139, 250, 0.1)",
+    gridV: "rgba(167, 139, 250, 0.07)",
+    lineSoft: "#c4b5fd",
+    line: "#f3e8ff",
+    dotFill: "#14081f",
+    dotStroke: "#ede9fe",
+    value: "#f5f3ff",
+    valueGlow: "#c4b5fd",
+    date: "#c4b5fd",
+    arrow: "#c4b5fd",
+    tick: "#c4b5fd",
+  },
+} as const;
+
 export default function NeonLiveChart({
   series,
   dense = false,
   ariaLabel = "Live community business chart",
+  tone = "cyan",
 }: {
   series: LiveBusinessPoint[];
   dense?: boolean;
   ariaLabel?: string;
+  tone?: keyof typeof CHART_TONES;
 }) {
+  const palette = CHART_TONES[tone];
   const uid = useId().replace(/:/g, "");
 
   const chart = useMemo(() => {
@@ -99,7 +141,11 @@ export default function NeonLiveChart({
   const valueStep = series.length > 10 ? Math.max(2, Math.ceil(series.length / 8)) : 1;
 
   return (
-    <div className="neon-live-chart relative overflow-hidden rounded-lg">
+    <div
+      className={`neon-live-chart relative overflow-hidden rounded-lg${
+        tone === "violet" ? " neon-live-chart--violet" : ""
+      }`}
+    >
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full h-[240px] sm:h-[270px]"
@@ -108,13 +154,13 @@ export default function NeonLiveChart({
       >
         <defs>
           <linearGradient id={`${uid}-fill`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#67f6ff" stopOpacity="0.45" />
-            <stop offset="70%" stopColor="#00d4ff" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#00d4ff" stopOpacity="0" />
+            <stop offset="0%" stopColor={palette.fillTop} stopOpacity="0.45" />
+            <stop offset="70%" stopColor={palette.fillMid} stopOpacity="0.08" />
+            <stop offset="100%" stopColor={palette.fillMid} stopOpacity="0" />
           </linearGradient>
           <linearGradient id={`${uid}-bar`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7af8ff" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#00c8ff" stopOpacity="0.08" />
+            <stop offset="0%" stopColor={palette.barTop} stopOpacity="0.55" />
+            <stop offset="100%" stopColor={palette.barBottom} stopOpacity="0.08" />
           </linearGradient>
           <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="3.5" result="blur" />
@@ -146,7 +192,7 @@ export default function NeonLiveChart({
             x2={WIDTH - PAD.right}
             y1={PAD.top + (i * chart.plotH) / 7}
             y2={PAD.top + (i * chart.plotH) / 7}
-            stroke="rgba(0, 220, 255, 0.08)"
+            stroke={palette.gridH}
           />
         ))}
         {Array.from({ length: 10 }).map((_, i) => (
@@ -156,7 +202,7 @@ export default function NeonLiveChart({
             y2={PAD.top + chart.plotH}
             x1={PAD.left + (i * chart.plotW) / 9}
             x2={PAD.left + (i * chart.plotW) / 9}
-            stroke="rgba(0, 220, 255, 0.06)"
+            stroke={palette.gridV}
           />
         ))}
 
@@ -173,7 +219,7 @@ export default function NeonLiveChart({
               height={Math.max(barH, 2)}
               rx={2}
               fill={`url(#${uid}-bar)`}
-              stroke="rgba(103, 246, 255, 0.45)"
+              stroke={palette.barStroke}
               strokeWidth="0.8"
               style={{
                 animationDelay: `${0.08 + index * Math.min(0.08, 1.4 / series.length)}s`,
@@ -187,7 +233,7 @@ export default function NeonLiveChart({
           <path
             d={chart.line}
             fill="none"
-            stroke="#67f6ff"
+            stroke={palette.lineSoft}
             strokeWidth="10"
             strokeLinecap="round"
             opacity="0.22"
@@ -197,7 +243,7 @@ export default function NeonLiveChart({
             className="neon-line-draw"
             d={chart.line}
             fill="none"
-            stroke="#b8ffff"
+            stroke={palette.line}
             strokeWidth="3.2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -226,8 +272,8 @@ export default function NeonLiveChart({
                   cx={point.x}
                   cy={point.y}
                   r={dense ? 2.4 : 3.4}
-                  fill="#04131c"
-                  stroke="#d9ffff"
+                  fill={palette.dotFill}
+                  stroke={palette.dotStroke}
                   strokeWidth="1.4"
                   filter={`url(#${uid}-glow)`}
                 />
@@ -237,10 +283,10 @@ export default function NeonLiveChart({
                   x={point.x}
                   y={point.y + (dense && index % 2 === 1 ? 16 : -10)}
                   textAnchor="middle"
-                  fill="#e7ffff"
+                  fill={palette.value}
                   fontSize={dense ? 8 : 10}
                   fontWeight={700}
-                  style={{ textShadow: "0 0 8px #67f6ff" }}
+                  style={{ textShadow: `0 0 8px ${palette.valueGlow}` }}
                 >
                   {chartValue(point.value)}
                 </text>
@@ -250,7 +296,7 @@ export default function NeonLiveChart({
                   x={point.x}
                   y={PAD.top + chart.plotH + 16}
                   textAnchor="middle"
-                  fill="#7dd3e8"
+                  fill={palette.date}
                   fontSize={dense ? 8 : 9}
                 >
                   {point.label}
@@ -266,7 +312,7 @@ export default function NeonLiveChart({
             filter={`url(#${uid}-glow)`}
           >
             <polygon points="0,0 16,-6 16,6" fill="#ffffff" />
-            <polygon points="4,0 18,-7 18,7" fill="#67f6ff" opacity="0.85" />
+            <polygon points="4,0 18,-7 18,7" fill={palette.arrow} opacity="0.85" />
           </g>
         )}
 
@@ -287,7 +333,7 @@ export default function NeonLiveChart({
             key={tick.y}
             x={WIDTH - PAD.right + 8}
             y={tick.y + 3}
-            fill="#67f6ff"
+            fill={palette.tick}
             fontSize="9"
             opacity="0.75"
           >
