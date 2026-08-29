@@ -45,9 +45,11 @@ function arrowAngle(points: Point[]): number {
 export default function NeonLiveChart({
   series,
   dense = false,
+  ariaLabel = "Live community business chart",
 }: {
   series: LiveBusinessPoint[];
   dense?: boolean;
+  ariaLabel?: string;
 }) {
   const uid = useId().replace(/:/g, "");
 
@@ -102,7 +104,7 @@ export default function NeonLiveChart({
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full h-[240px] sm:h-[270px]"
         role="img"
-        aria-label="Live community business chart"
+        aria-label={ariaLabel}
       >
         <defs>
           <linearGradient id={`${uid}-fill`} x1="0" y1="0" x2="0" y2="1">

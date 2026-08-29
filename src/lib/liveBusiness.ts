@@ -51,7 +51,7 @@ function toLocalYmd(raw: string): string | null {
   return null;
 }
 
-function formatPointLabel(raw: string): string {
+export function formatPointLabel(raw: string): string {
   const ymd = toLocalYmd(raw);
   if (ymd) {
     const date = new Date(`${ymd}T00:00:00`);
