@@ -60,6 +60,7 @@ import type { DashboardSectionId } from "@/lib/dashboardSections";
 import BrandLogo from "@/components/BrandLogo";
 import CustomerSwitcher from "@/components/CustomerSwitcher";
 import AffiliateSection from "@/components/AffiliateSection";
+import AccountStatusPanel from "@/components/AccountStatusPanel";
 import LiveBusinessSection from "@/components/LiveBusinessSection";
 
 const metricIcons: Record<string, React.ReactNode> = {
@@ -120,54 +121,66 @@ function Header({
   );
 }
 
-function ProfileBanner({ user }: { user: UserProfile }) {
+function ProfileBanner({
+  user,
+  customerId = null,
+}: {
+  user: UserProfile;
+  customerId?: string | null;
+}) {
   const [showBalance, setShowBalance] = useState(true);
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24]">
-      <div className="p-3 sm:p-4 flex items-start gap-3 sm:gap-4">
-        <div className="relative flex-shrink-0">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#1a2240] border-2 border-[#2a3458]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">
-            <CheckCircle2 className="w-3 h-3 text-white" />
-          </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-white text-sm sm:text-base tracking-wide truncate">
-            {user.name}
-          </h2>
-          {user.viewingDownline && (
-            <p className="text-[10px] text-violet-400 mt-0.5">
-              Viewing first-level customer
-            </p>
-          )}
-          <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email}</p>
-          <div className="mt-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-slate-400">Total Active Staking</span>
-              <button
-                onClick={() => setShowBalance(!showBalance)}
-                className="text-slate-500 hover:text-slate-300"
-              >
-                {showBalance ? (
-                  <Eye className="w-3.5 h-3.5" />
-                ) : (
-                  <EyeOff className="w-3.5 h-3.5" />
-                )}
-              </button>
+      <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="relative flex-shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#1a2240] border-2 border-[#2a3458]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <p className="text-xl sm:text-2xl font-bold gradient-text mt-0.5 break-all sm:break-normal">
-              {showBalance ? user.balance : "••••••••"}
-            </p>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">
+              <CheckCircle2 className="w-3 h-3 text-white" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-white text-sm sm:text-base tracking-wide truncate">
+              {user.name}
+            </h2>
+            {user.viewingDownline && (
+              <p className="text-[10px] text-violet-400 mt-0.5">
+                Viewing first-level customer
+              </p>
+            )}
+            <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email}</p>
+            <div className="mt-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-400">Total Active Staking</span>
+                <button
+                  onClick={() => setShowBalance(!showBalance)}
+                  className="text-slate-500 hover:text-slate-300"
+                >
+                  {showBalance ? (
+                    <Eye className="w-3.5 h-3.5" />
+                  ) : (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold gradient-text mt-0.5 break-all sm:break-normal">
+                {showBalance ? user.balance : "••••••••"}
+              </p>
+            </div>
           </div>
         </div>
+        <AccountStatusPanel
+          key={customerId ?? "self"}
+          customerId={customerId}
+        />
       </div>
     </div>
   );
@@ -1177,7 +1190,7 @@ export default function Dashboard({
             </p>
           </div>
         )}
-        <ProfileBanner user={data.user} />
+        <ProfileBanner user={data.user} customerId={selectedCustomerId} />
         <QuickActions />
         <StatsGrid
           metricsRow1={data.metricsRow1}
