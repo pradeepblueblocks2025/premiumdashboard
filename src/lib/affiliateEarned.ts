@@ -125,9 +125,11 @@ export function normalizeAffiliateEarned(payload: unknown): AffiliateEarnedData 
   };
 }
 
+export type AffiliateChartRange = LiveBusinessRange | "yesterday";
+
 export function affiliateEarnedPath(
   customerId?: string | null,
-  range?: LiveBusinessRange
+  range?: AffiliateChartRange
 ): string {
   const path = range
     ? `${AFFILIATE_EARNED_PATH}?range=${encodeURIComponent(range)}`
@@ -137,7 +139,7 @@ export function affiliateEarnedPath(
 
 export async function fetchAffiliateEarned(
   customerId?: string | null,
-  range?: LiveBusinessRange
+  range?: AffiliateChartRange
 ): Promise<AffiliateEarnedData> {
   const payload = await fetchBackendJson<unknown>(
     affiliateEarnedPath(customerId, range)

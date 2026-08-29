@@ -12,7 +12,14 @@ import {
 } from "@/lib/affiliateEarned";
 import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
 import type { LiveBusinessPoint, LiveBusinessRange } from "@/lib/types";
-import { Activity, CalendarDays, CalendarRange, Loader2, Users } from "lucide-react";
+import {
+  Activity,
+  CalendarDays,
+  CalendarRange,
+  History,
+  Loader2,
+  Users,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import PremiumAffiliateChart from "@/components/PremiumAffiliateChart";
 
@@ -77,12 +84,16 @@ export default function AffiliateSection({
       setError(null);
 
       try {
-        const [payload, monthPayload] = await Promise.all([
+        const [payload, monthPayload, yesterdayPayload] = await Promise.all([
           fetchAffiliateEarned(customerId, "7days"),
           fetchAffiliateEarned(customerId, "month"),
+          fetchAffiliateEarned(customerId, "yesterday"),
         ]);
         if (signal?.cancelled) return;
-        setData(payload);
+        setData({
+          ...payload,
+          yesterday: yesterdayPayload.yesterday,
+        });
         setMonthSeries(monthPayload.series);
       } catch (err) {
         if (signal?.cancelled) return;
@@ -228,7 +239,12 @@ export default function AffiliateSection({
               </p>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <PeriodTile
+                label="Yesterday"
+                icon={History}
+                period={data?.yesterday}
+              />
               <PeriodTile
                 label="7 Days"
                 icon={CalendarRange}
