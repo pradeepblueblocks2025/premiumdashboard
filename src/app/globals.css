@@ -85,6 +85,34 @@ body {
     linear-gradient(180deg, rgba(24, 16, 6, 0.5), rgba(10, 8, 4, 0.92));
 }
 
+.premium-affiliate-chart {
+  background:
+    radial-gradient(90% 70% at 12% 0%, rgba(243, 210, 122, 0.1), transparent 46%),
+    radial-gradient(80% 60% at 100% 100%, rgba(138, 100, 22, 0.14), transparent 50%),
+    linear-gradient(180deg, #14100a 0%, #0b0906 100%);
+  box-shadow: inset 0 0 0 1px rgba(232, 195, 106, 0.12);
+}
+
+.premium-affiliate-col {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  animation: premium-affiliate-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes premium-affiliate-rise {
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-affiliate-col {
+    animation: none;
+    transform: none;
+  }
+}
+
 .neon-line-draw {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;

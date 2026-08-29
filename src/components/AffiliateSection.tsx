@@ -14,7 +14,7 @@ import { formatMtht, formatNumber, formatUsd } from "@/lib/format";
 import type { LiveBusinessPoint, LiveBusinessRange } from "@/lib/types";
 import { Activity, Loader2, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import NeonLiveChart from "@/components/NeonLiveChart";
+import PremiumAffiliateChart from "@/components/PremiumAffiliateChart";
 
 const POLL_MS = 30_000;
 
@@ -151,12 +151,10 @@ export default function AffiliateSection({
             No community affiliations yet
           </p>
         ) : (
-          <NeonLiveChart
+          <PremiumAffiliateChart
             key={`${range}-${series.length}`}
             series={series}
             dense={denseLabels}
-            tone="gold"
-            ariaLabel="Community affiliations chart"
           />
         )}
       </div>
