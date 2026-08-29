@@ -60,6 +60,7 @@ import type { DashboardSectionId } from "@/lib/dashboardSections";
 import BrandLogo from "@/components/BrandLogo";
 import CustomerSwitcher from "@/components/CustomerSwitcher";
 import AffiliateSection from "@/components/AffiliateSection";
+import AffiliateLegsPie from "@/components/AffiliateLegsPie";
 import AccountStatusPanel from "@/components/AccountStatusPanel";
 import LiveBusinessSection from "@/components/LiveBusinessSection";
 
@@ -1165,6 +1166,10 @@ export default function Dashboard({
 
         <LiveBusinessSection customerId={selectedCustomerId} />
         <AffiliateSection customerId={selectedCustomerId} />
+        <AffiliateLegsPie
+          key={`affiliate-legs-${selectedCustomerId ?? "self"}`}
+          customerId={selectedCustomerId}
+        />
 
         <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {chartsLoading ? (
