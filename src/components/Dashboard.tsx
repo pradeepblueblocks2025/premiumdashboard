@@ -1051,6 +1051,45 @@ function QuickActionsFooter() {
   );
 }
 
+const SOCIAL_LINKS = [
+  {
+    label: "X",
+    href: "https://x.com/",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.726-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+    ),
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+        <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.55 12 3.55 12 3.55s-7.54 0-9.38.5A3.02 3.02 0 0 0 .5 6.19 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14c1.84.5 9.38.5 9.38.5s7.54 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.81zM9.75 15.57V8.43L15.84 12l-6.09 3.57z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Telegram",
+    href: "https://t.me/",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+        <path d="M21.43 4.22c.24-.99-.73-1.8-1.68-1.43L2.47 9.37c-1.06.4-1.05 1.9.02 2.27l4.4 1.52 1.67 5.3c.24.76 1.18.98 1.73.4l2.42-2.56 4.62 3.4c.86.63 2.08.16 2.28-.88l2.82-14.6zM9.2 13.96l8.3-5.17c.18-.11.37.13.22.27l-6.7 6.4-.3 3.38-1.52-4.88z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+        <path d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4h-9zm9.25 1.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+      </svg>
+    ),
+  },
+] as const;
+
 function Footer() {
   return (
     <footer className="mx-3 sm:mx-4 mb-6 pt-4 border-t border-[#1a2240]">
@@ -1066,13 +1105,18 @@ function Footer() {
           </p>
         </div>
         <div className="flex gap-2 justify-center sm:justify-end flex-shrink-0">
-          {["X", "YT", "TG", "IG"].map((social) => (
-            <button
-              key={social}
-              className="w-8 h-8 rounded-full bg-[#131a35] border border-[#1a2240] flex items-center justify-center text-[10px] text-slate-400 hover:text-white hover:border-violet-500/40 transition-colors"
+          {SOCIAL_LINKS.map((social) => (
+            <a
+              key={social.label}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={social.label}
+              aria-label={social.label}
+              className="w-8 h-8 rounded-full bg-[#131a35] border border-[#1a2240] flex items-center justify-center text-slate-400 hover:text-white hover:border-violet-500/40 transition-colors"
             >
-              {social}
-            </button>
+              {social.icon}
+            </a>
           ))}
         </div>
       </div>
