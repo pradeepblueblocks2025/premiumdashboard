@@ -87,9 +87,30 @@ function normalizePoint(item: unknown, index: number): LiveBusinessPoint | null 
   };
 }
 
+function asChart(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function longestChart(record: Record<string, unknown>): unknown[] {
+  const month = asRecord(record.month);
+  const candidates = [
+    asChart(record.chart),
+    asChart(record.series),
+    asChart(record.daily),
+    asChart(record.monthChart),
+    asChart(record.points),
+    month ? asChart(month.chart) : [],
+    month ? asChart(month.series) : [],
+    month ? asChart(month.daily) : [],
+  ];
+  return candidates.reduce(
+    (best, current) => (current.length > best.length ? current : best),
+    [] as unknown[]
+  );
+}
+
 export function normalizeAffiliateEarned(payload: unknown): AffiliateEarnedData {
   const record = asRecord(payload) ?? {};
-  const chart = Array.isArray(record.chart) ? record.chart : [];
   const conversionRatio = numberField(record, "conversionRatio");
 
   return {
@@ -97,7 +118,7 @@ export function normalizeAffiliateEarned(payload: unknown): AffiliateEarnedData 
     yesterday: normalizePeriod(record.yesterday),
     week: normalizePeriod(record["7days"] ?? record.week),
     month: normalizePeriod(record.month),
-    series: chart
+    series: longestChart(record)
       .map(normalizePoint)
       .filter((point): point is LiveBusinessPoint => point !== null),
     conversionRatio: conversionRatio || undefined,

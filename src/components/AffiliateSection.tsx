@@ -67,11 +67,11 @@ export default function AffiliateSection({
       try {
         const [payload, monthPayload] = await Promise.all([
           fetchAffiliateEarned(customerId),
-          fetchAffiliateEarned(customerId, "month").catch(() => null),
+          fetchAffiliateEarned(customerId, "month"),
         ]);
         if (signal?.cancelled) return;
         setData(payload);
-        setMonthSeries(monthPayload?.series ?? payload.series);
+        setMonthSeries(monthPayload.series);
       } catch (err) {
         if (signal?.cancelled) return;
         setError(
@@ -104,7 +104,7 @@ export default function AffiliateSection({
   const weekSeries = clipSeriesThroughToday(data?.series ?? []).slice(-7);
   const monthBounds = calendarMonthRange();
   const monthChart = fillDailySeries(
-    monthSeries.length > 0 ? monthSeries : (data?.series ?? []),
+    monthSeries,
     monthBounds.start,
     monthBounds.end
   );
