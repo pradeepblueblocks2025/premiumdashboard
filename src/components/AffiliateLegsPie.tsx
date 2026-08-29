@@ -3,12 +3,47 @@
 import {
   fetchAffiliateByLegs,
   type AffiliateByLegsData,
+  type AffiliateByLegsRange,
   type AffiliateLeg,
 } from "@/lib/affiliateByLegs";
 import { formatMtht, formatNumber } from "@/lib/format";
 import { Crown, Loader2, PieChart as PieIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+
+const RANGES: Array<{ id: AffiliateByLegsRange; label: string }> = [
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "7days", label: "7 Days" },
+  { id: "month", label: "This Month" },
+];
+
+function RangePills({
+  range,
+  onChange,
+}: {
+  range: AffiliateByLegsRange;
+  onChange: (range: AffiliateByLegsRange) => void;
+}) {
+  return (
+    <div className="flex flex-wrap rounded-lg bg-[#131a35] border border-[#1a2240] p-0.5">
+      {RANGES.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => onChange(item.id)}
+          className={`px-2 py-1 text-[10px] rounded-md transition-colors ${
+            range === item.id
+              ? "bg-amber-500/15 text-amber-200"
+              : "text-slate-500 hover:text-slate-300"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const SLICE_COLORS = [
   "#fbbf24",
@@ -117,6 +152,7 @@ export default function AffiliateLegsPie({
 }: {
   customerId?: string | null;
 }) {
+  const [range, setRange] = useState<AffiliateByLegsRange>("7days");
   const [data, setData] = useState<AffiliateByLegsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,7 +164,7 @@ export default function AffiliateLegsPie({
       setLoading(true);
       setError(null);
       try {
-        const payload = await fetchAffiliateByLegs(customerId);
+        const payload = await fetchAffiliateByLegs(customerId, range);
         if (signal?.cancelled) return;
         setData(payload);
       } catch (err) {
@@ -142,7 +178,7 @@ export default function AffiliateLegsPie({
         if (!signal?.cancelled) setLoading(false);
       }
     },
-    [customerId]
+    [customerId, range]
   );
 
   useEffect(() => {
@@ -155,7 +191,7 @@ export default function AffiliateLegsPie({
 
   useEffect(() => {
     setSelectedKey(null);
-  }, [customerId]);
+  }, [customerId, range]);
 
   useEffect(() => {
     if (!selectedKey) return;
@@ -316,39 +352,43 @@ export default function AffiliateLegsPie({
   return (
     <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
       <div className="card p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <PieIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-          <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-slate-300">
-              Affiliation by Leg
-            </h3>
-            {data?.powerLeg ? (
-              <p className="text-[10px] text-amber-300/80 mt-0.5 truncate">
-                Power leg: {data.powerLeg.name}
-              </p>
-            ) : (
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                Downline affiliation split across direct legs
-              </p>
-            )}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <PieIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <div className="min-w-0">
+              <h3 className="text-xs font-semibold text-slate-300">
+                Affiliation by Leg
+              </h3>
+              {data?.powerLeg ? (
+                <p className="text-[10px] text-amber-300/80 mt-0.5 truncate">
+                  Power leg: {data.powerLeg.name}
+                </p>
+              ) : (
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Downline affiliation split across direct legs
+                </p>
+              )}
+            </div>
           </div>
+          <RangePills range={range} onChange={setRange} />
         </div>
         {chartBody}
       </div>
 
       <div className="card p-4">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <h3 className="text-xs font-semibold text-slate-300">Affiliation by Leg</h3>
-          {data ? (
-            <div className="text-right">
-              <p className="text-[10px] text-slate-500">
-                {formatNumber(data.totalLegs, 0)} legs
-              </p>
-              <p className="text-xs font-semibold text-white">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="min-w-0">
+            <h3 className="text-xs font-semibold text-slate-300">
+              Affiliation by Leg
+            </h3>
+            {data ? (
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                {formatNumber(data.totalLegs, 0)} legs ·{" "}
                 {formatMtht(data.totalAffiliate, true)}
               </p>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
+          <RangePills range={range} onChange={setRange} />
         </div>
         {listBody}
       </div>
