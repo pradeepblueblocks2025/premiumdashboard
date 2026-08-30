@@ -11,11 +11,15 @@ import { Crown, Loader2, PieChart as PieIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
-const RANGES: Array<{ id: AffiliateByLegsRange; label: string }> = [
-  { id: "today", label: "Today" },
-  { id: "yesterday", label: "Yesterday" },
-  { id: "7days", label: "7 Days" },
-  { id: "month", label: "This Month" },
+const RANGES: Array<{
+  id: AffiliateByLegsRange;
+  label: string;
+  shortLabel: string;
+}> = [
+  { id: "today", label: "Today", shortLabel: "Today" },
+  { id: "yesterday", label: "Yesterday", shortLabel: "Yest" },
+  { id: "7days", label: "7 Days", shortLabel: "7D" },
+  { id: "month", label: "This Month", shortLabel: "Month" },
 ];
 
 function RangePills({
@@ -26,19 +30,20 @@ function RangePills({
   onChange: (range: AffiliateByLegsRange) => void;
 }) {
   return (
-    <div className="flex flex-wrap rounded-lg bg-[#131a35] border border-[#1a2240] p-0.5">
+    <div className="grid grid-cols-4 w-full sm:w-auto sm:flex sm:flex-nowrap rounded-lg bg-[#131a35] border border-[#1a2240] p-0.5">
       {RANGES.map((item) => (
         <button
           key={item.id}
           type="button"
           onClick={() => onChange(item.id)}
-          className={`px-2 py-1 text-[10px] rounded-md transition-colors ${
+          className={`px-1 sm:px-2 py-1 text-[9px] sm:text-[10px] rounded-md whitespace-nowrap text-center transition-colors ${
             range === item.id
               ? "bg-amber-500/15 text-amber-200"
               : "text-slate-500 hover:text-slate-300"
           }`}
         >
-          {item.label}
+          <span className="sm:hidden">{item.shortLabel}</span>
+          <span className="hidden sm:inline">{item.label}</span>
         </button>
       ))}
     </div>
@@ -353,7 +358,7 @@ export default function AffiliateLegsPie({
   return (
     <div className="mx-3 sm:mx-4 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
       <div className="card p-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-2 min-w-0">
             <PieIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
             <div className="min-w-0">
@@ -377,7 +382,7 @@ export default function AffiliateLegsPie({
       </div>
 
       <div className="card p-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h3 className="text-xs font-semibold text-slate-300">
               Affiliation by Leg
