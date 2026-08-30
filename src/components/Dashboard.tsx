@@ -24,13 +24,7 @@ import {
   Target,
   LogOut,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState, useEffect } from "react";
 import type {
   BoosterAchieverData,
@@ -347,11 +341,21 @@ function BoosterAchieversCard({
 
 function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) {
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
+  const [hoveredRange, setHoveredRange] = useState<string | null>(null);
   const total = nftPriceData.reduce((s, d) => s + d.count, 0);
-  const selected = nftPriceData.find((item) => item.range === selectedRange);
+  const activeRange = hoveredRange ?? selectedRange;
+  const active = nftPriceData.find((item) => item.range === activeRange);
 
   function toggleRange(range: string) {
     setSelectedRange((current) => (current === range ? null : range));
+  }
+
+  function rangeFromPieEvent(entry: { payload?: NftPriceChartData } | NftPriceChartData) {
+    return (
+      ("payload" in entry ? entry.payload?.range : undefined) ??
+      ("range" in entry ? entry.range : undefined) ??
+      ""
+    );
   }
 
   if (nftPriceData.length === 0) {
@@ -371,7 +375,7 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
         NFTs by USDT Price
       </h3>
       <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-2">
-        <div className="relative w-32 h-32 sm:w-28 sm:h-28 flex-shrink-0">
+        <div className="relative w-32 h-32 sm:w-28 sm:h-28 flex-shrink-0 overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -380,71 +384,69 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                 cy="50%"
                 innerRadius={32}
                 outerRadius={(entry: NftPriceChartData) =>
-                  selectedRange && entry.range === selectedRange ? 58 : 52
+                  activeRange && entry.range === activeRange ? 58 : 52
                 }
                 paddingAngle={2}
                 dataKey="valueUsd"
                 onClick={(entry) => {
-                  const payload = entry?.payload as NftPriceChartData | undefined;
-                  const range = payload?.range ?? "";
+                  const range = rangeFromPieEvent(entry as NftPriceChartData);
                   if (range) toggleRange(range);
                 }}
+                onMouseEnter={(entry) => {
+                  const range = rangeFromPieEvent(entry as NftPriceChartData);
+                  if (range) setHoveredRange(range);
+                }}
+                onMouseLeave={() => setHoveredRange(null)}
                 style={{ cursor: "pointer", outline: "none" }}
               >
                 {nftPriceData.map((entry) => {
-                  const selected = selectedRange === entry.range;
-                  const dimmed = !!selectedRange && !selected;
+                  const highlighted = activeRange === entry.range;
+                  const dimmed = !!activeRange && !highlighted;
                   return (
                     <Cell
                       key={entry.range}
                       fill={entry.color}
                       fillOpacity={dimmed ? 0.28 : 1}
-                      stroke={selected ? "#ffffff" : "#0a0f24"}
-                      strokeWidth={selected ? 2 : 1}
+                      stroke={highlighted ? "#ffffff" : "#0a0f24"}
+                      strokeWidth={highlighted ? 2 : 1}
                       style={{ cursor: "pointer", outline: "none" }}
                     />
                   );
                 })}
               </Pie>
-              <Tooltip
-                cursor={false}
-                content={({ active, payload }) => {
-                  if (!active || !payload?.[0]) return null;
-                  const item = payload[0].payload as NftPriceChartData;
-                  return (
-                    <div className="rounded-lg border border-[#1a2240] bg-[#0a0f24] px-2.5 py-1.5 shadow-xl">
-                      <p className="text-[10px] font-semibold text-white">{item.range}</p>
-                      <p className="text-[10px] text-cyan-300 mt-0.5">
-                        {formatUsd(item.valueUsd, true)}
-                      </p>
-                      <p className="text-[9px] text-slate-500">
-                        {item.count.toLocaleString()} NFTs · {item.percent}%
-                      </p>
-                    </div>
-                  );
-                }}
-              />
             </PieChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2">
-            <span className="text-[8px] text-slate-500">
-              {selected ? "USDT" : "Total NFTs"}
-            </span>
-            <span className="text-[10px] sm:text-xs font-bold text-white text-center leading-tight">
-              {selected
-                ? formatUsd(selected.valueUsd, true)
-                : total.toLocaleString()}
-            </span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-3 overflow-hidden">
+            {active ? (
+              <>
+                <span className="text-[10px] sm:text-xs font-bold text-cyan-300 leading-none">
+                  {formatUsd(active.valueUsd, true)}
+                </span>
+                <span className="text-[8px] text-slate-500 mt-0.5 leading-none">
+                  {active.count.toLocaleString()} · {active.percent}%
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-[8px] text-slate-500 leading-none">Total NFTs</span>
+                <span className="text-[10px] sm:text-xs font-bold text-white leading-none mt-0.5">
+                  {total.toLocaleString()}
+                </span>
+              </>
+            )}
           </div>
         </div>
         <div className="w-full sm:flex-1 space-y-1">
           {nftPriceData.map(({ range, count, percent, color, valueUsd }) => {
             const isSelected = selectedRange === range;
+            const isActive = activeRange === range;
             return (
               <button
                 key={range}
                 type="button"
                 onClick={() => toggleRange(range)}
+                onMouseEnter={() => setHoveredRange(range)}
+                onMouseLeave={() => setHoveredRange(null)}
                 className="w-full flex items-center gap-1.5 min-w-0 rounded-md px-1 py-0.5 text-left transition-all"
                 style={
                   isSelected
@@ -452,25 +454,27 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                         backgroundColor: `${color}22`,
                         boxShadow: `inset 0 0 0 1px ${color}`,
                       }
-                    : undefined
+                    : isActive
+                      ? { backgroundColor: `${color}14` }
+                      : undefined
                 }
               >
                 <div
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{
                     backgroundColor: color,
-                    boxShadow: isSelected ? `0 0 6px ${color}` : undefined,
+                    boxShadow: isActive ? `0 0 6px ${color}` : undefined,
                   }}
                 />
                 <span
                   className={`text-[9px] flex-1 truncate ${
-                    isSelected ? "text-white font-semibold" : "text-slate-400"
+                    isActive ? "text-white font-semibold" : "text-slate-400"
                   }`}
                 >
                   {range}
                 </span>
                 <span className="text-[9px] text-white font-medium flex-shrink-0">
-                  {isSelected
+                  {isActive
                     ? formatUsd(valueUsd, true)
                     : count.toLocaleString()}
                 </span>
