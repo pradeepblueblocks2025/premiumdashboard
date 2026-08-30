@@ -1,4 +1,4 @@
-import { executiveAvatarUrl } from "./avatar";
+import { DEFAULT_PROFILE_IMAGE } from "./avatar";
 import type { PremiumDashboardData, DashboardViewModel, FirstLevelCustomer } from "./types";
 import { transformDashboardData } from "./transformers";
 import { decodeJwtEmail, formatMtht } from "./format";
@@ -79,7 +79,7 @@ export function buildUserProfileFromToken(token: string) {
     name: nameFromEmail,
     email,
     balance: formatMtht(0),
-    avatar: executiveAvatarUrl(email),
+    avatar: DEFAULT_PROFILE_IMAGE,
   };
 }
 

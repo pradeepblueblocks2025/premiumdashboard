@@ -46,7 +46,7 @@ import {
   rankTabStatusClasses,
   resolveSelfStaking,
 } from "@/lib/transformers";
-import { executiveAvatarUrl } from "@/lib/avatar";
+import { DEFAULT_PROFILE_IMAGE } from "@/lib/avatar";
 import { formatUsd, progressPercent } from "@/lib/format";
 import { fetchBackendJson } from "@/lib/clientApi";
 import { mergeRankDetail } from "@/lib/api";
@@ -143,12 +143,11 @@ function ProfileBanner({
             <img
               src={avatarSrc}
               alt={user.name}
-              className={`absolute inset-0 w-full h-full object-center bg-[#1a2240] ${
-                avatarSrc.includes("dicebear.com") ? "object-contain" : "object-cover"
-              }`}
+              className="absolute inset-0 w-full h-full object-cover object-center bg-[#1a2240]"
               onError={() => {
-                const fallback = executiveAvatarUrl(user.email || user.name);
-                if (avatarSrc !== fallback) setAvatarSrc(fallback);
+                if (avatarSrc !== DEFAULT_PROFILE_IMAGE) {
+                  setAvatarSrc(DEFAULT_PROFILE_IMAGE);
+                }
               }}
             />
             <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">

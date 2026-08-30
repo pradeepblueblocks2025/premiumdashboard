@@ -8,7 +8,7 @@ import type {
   SelfStakingProgress,
   VolumeProgress,
 } from "./types";
-import { executiveAvatarUrl } from "./avatar";
+import { DEFAULT_PROFILE_IMAGE } from "./avatar";
 import { decodeJwtEmail, formatMtht, formatNumber, formatUsd } from "./format";
 
 const RANK_COLORS = [
@@ -84,12 +84,11 @@ function buildUserProfile(
   profileImageUrl?: string | null
 ): DashboardViewModel["user"] {
   if (viewingCustomer) {
-    const seed = viewingCustomer.email || viewingCustomer.customerId;
     return {
       name: viewingCustomer.name.toUpperCase(),
       email: viewingCustomer.email ?? "",
       balance: formatMtht(data.activeStaking.totalActiveMtht),
-      avatar: viewingCustomer.avatar || executiveAvatarUrl(seed),
+      avatar: viewingCustomer.avatar || DEFAULT_PROFILE_IMAGE,
       viewingDownline: true,
     };
   }
@@ -104,7 +103,7 @@ function buildUserProfile(
     name: nameFromEmail,
     email,
     balance: formatMtht(data.activeStaking.totalActiveMtht),
-    avatar: profileImageUrl || executiveAvatarUrl(email),
+    avatar: profileImageUrl || DEFAULT_PROFILE_IMAGE,
   };
 }
 
