@@ -862,7 +862,7 @@ function RankCriteriaSection({
   const showingRankLoader = needsDetail && loadingRank === activeTab;
 
   return (
-    <div className="mx-3 sm:mx-4 mb-4 card overflow-hidden">
+    <div>
       <div className="px-3 sm:px-4 pt-3 pb-2 border-b border-[#1a2240]">
         <h3 className="text-xs font-semibold text-slate-300">Rank Achievement Criteria</h3>
         <p className="text-[10px] text-slate-500 mt-0.5">
@@ -992,30 +992,28 @@ function LazyRankProgressPanel({
   }
 
   return (
-    <div className="mx-3 sm:mx-4 mb-4">
-      <div className="card overflow-hidden mb-3">
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left border-b border-[#1a2240] hover:bg-violet-500/5 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-violet-400" />
-            <span className="text-xs font-semibold text-slate-200">
-              Rank Achievement Criteria
-            </span>
-          </div>
-          <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" />
-        </button>
-      </div>
+    <div className="mx-3 sm:mx-4 mb-4 card overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className="w-full px-3 sm:px-4 py-3 flex items-center justify-between gap-3 text-left border-b border-[#1a2240] hover:bg-violet-500/5 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-violet-400" />
+          <span className="text-xs font-semibold text-slate-200">
+            Rank Achievement Criteria
+          </span>
+        </div>
+        <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" />
+      </button>
 
       {loading && !rankProgress ? (
-        <div className="card flex flex-col items-center justify-center py-12 gap-2">
+        <div className="flex flex-col items-center justify-center py-12 gap-2">
           <Loader2 className="w-6 h-6 text-violet-400 animate-spin" />
           <p className="text-[10px] text-slate-500">Loading rank progress...</p>
         </div>
       ) : error && !rankProgress ? (
-        <div className="card p-4">
+        <div className="p-4">
           <p className="text-xs text-red-400 mb-3">{error}</p>
           <button
             type="button"
@@ -1027,10 +1025,10 @@ function LazyRankProgressPanel({
         </div>
       ) : (
         <RankCriteriaSection
-            rankTabs={rankTabs}
-            rankProgress={rankProgress}
-            customerId={customerId}
-          />
+          rankTabs={rankTabs}
+          rankProgress={rankProgress}
+          customerId={customerId}
+        />
       )}
     </div>
   );
