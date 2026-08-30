@@ -94,6 +94,7 @@ export default function DashboardLoader() {
   >([]);
   const [customersLoading, setCustomersLoading] = useState(true);
   const [customersError, setCustomersError] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const viewingCustomer =
     firstLevelCustomers.find((c) => c.customerId === selectedCustomerId) ??
@@ -118,8 +119,15 @@ export default function DashboardLoader() {
       try {
         const access = await fetchCustomerAccess();
         if (cancelled) return;
+        setProfileImageUrl(access.profileImageUrl);
         if (access.allowed) {
-          setData(createInitialDashboardViewModel(authToken));
+          setData(
+            createInitialDashboardViewModel(
+              authToken,
+              null,
+              access.profileImageUrl
+            )
+          );
           setAccessGate("allowed");
           setAuthChecked(true);
           return;
@@ -195,7 +203,9 @@ export default function DashboardLoader() {
     let cancelled = false;
     const token = getClientAuthToken();
 
-    setData(createInitialDashboardViewModel(token, viewingCustomer));
+    setData(
+      createInitialDashboardViewModel(token, viewingCustomer, profileImageUrl)
+    );
     setLoadingSections(new Set(DASHBOARD_SECTION_ORDER));
     setSectionErrors({});
 
@@ -211,7 +221,9 @@ export default function DashboardLoader() {
           merged = mergeSectionIntoDashboardData(merged, section, payload);
 
           if (!cancelled) {
-            setData(toViewModel(merged, authToken, viewingCustomer));
+            setData(
+              toViewModel(merged, authToken, viewingCustomer, profileImageUrl)
+            );
             setLoadingSections((prev) => {
               const next = new Set(prev);
               next.delete(section);

@@ -127,6 +127,11 @@ function ProfileBanner({
   customerId?: string | null;
 }) {
   const [showBalance, setShowBalance] = useState(true);
+  const [avatarSrc, setAvatarSrc] = useState(user.avatar);
+
+  useEffect(() => {
+    setAvatarSrc(user.avatar);
+  }, [user.avatar]);
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24]">
@@ -136,9 +141,13 @@ function ProfileBanner({
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#1a2240] border-2 border-[#2a3458]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={user.avatar}
+                src={avatarSrc}
                 alt={user.name}
                 className="w-full h-full object-cover"
+                onError={() => {
+                  const fallback = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email || user.name)}`;
+                  if (avatarSrc !== fallback) setAvatarSrc(fallback);
+                }}
               />
             </div>
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">

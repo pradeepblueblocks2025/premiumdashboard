@@ -76,10 +76,15 @@ const DEFAULT_RANK_CRITERIA_SUMMARY: RankCriteriaSummaryItem[] = [
     requirement: `3 STAR ${i + 1} achievers in Level 1 or 2 in 3 different legs + $${SELF_STAKING_USD[`STAR ${i + 2}`]} active self staking`,
   })),
 ];
+function placeholderAvatar(seed: string): string {
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+}
+
 function buildUserProfile(
   data: PremiumDashboardData,
   token: string,
-  viewingCustomer?: FirstLevelCustomer | null
+  viewingCustomer?: FirstLevelCustomer | null,
+  profileImageUrl?: string | null
 ): DashboardViewModel["user"] {
   if (viewingCustomer) {
     const seed = viewingCustomer.email || viewingCustomer.customerId;
@@ -87,7 +92,7 @@ function buildUserProfile(
       name: viewingCustomer.name.toUpperCase(),
       email: viewingCustomer.email ?? "",
       balance: formatMtht(data.activeStaking.totalActiveMtht),
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`,
+      avatar: viewingCustomer.avatar || placeholderAvatar(seed),
       viewingDownline: true,
     };
   }
@@ -102,7 +107,7 @@ function buildUserProfile(
     name: nameFromEmail,
     email,
     balance: formatMtht(data.activeStaking.totalActiveMtht),
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
+    avatar: profileImageUrl || placeholderAvatar(email),
   };
 }
 
@@ -176,12 +181,13 @@ function buildNftPriceChart(
 export function transformDashboardData(
   data: PremiumDashboardData,
   token: string,
-  viewingCustomer?: FirstLevelCustomer | null
+  viewingCustomer?: FirstLevelCustomer | null,
+  profileImageUrl?: string | null
 ): DashboardViewModel {
   const metrics = buildMetrics(data);
 
   return {
-    user: buildUserProfile(data, token, viewingCustomer),
+    user: buildUserProfile(data, token, viewingCustomer, profileImageUrl),
     metricsRow1: metrics.row1,
     metricsRow2: metrics.row2,
     rankAchievers: data.rankCounts.map((item, index) => ({

@@ -56,9 +56,15 @@ export const SECTION_LABELS: Record<DashboardSectionId, string> = {
 
 export function createInitialDashboardViewModel(
   token: string,
-  viewingCustomer?: FirstLevelCustomer | null
+  viewingCustomer?: FirstLevelCustomer | null,
+  profileImageUrl?: string | null
 ): DashboardViewModel {
-  return transformDashboardData(EMPTY_DASHBOARD_DATA, token, viewingCustomer);
+  return transformDashboardData(
+    EMPTY_DASHBOARD_DATA,
+    token,
+    viewingCustomer,
+    profileImageUrl
+  );
 }
 
 export function buildUserProfileFromToken(token: string) {
@@ -139,7 +145,8 @@ export function mergeSectionIntoDashboardData(
 export function toViewModel(
   data: PremiumDashboardData,
   token: string,
-  viewingCustomer?: FirstLevelCustomer | null
+  viewingCustomer?: FirstLevelCustomer | null,
+  profileImageUrl?: string | null
 ): DashboardViewModel {
-  return transformDashboardData(data, token, viewingCustomer);
+  return transformDashboardData(data, token, viewingCustomer, profileImageUrl);
 }

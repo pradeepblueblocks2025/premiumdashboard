@@ -219,6 +219,7 @@ export interface FirstLevelCustomer {
   name: string;
   email?: string;
   rank?: string;
+  avatar?: string;
 }
 
 export interface UserProfile {

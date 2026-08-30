@@ -4,6 +4,7 @@ import {
   getStoredToken,
   resolveAuthHeader,
 } from "./auth";
+import { resolveCustomerImageUrl } from "./customerAccess";
 import type { FirstLevelCustomer } from "./types";
 
 export function getClientAuthToken(): string {
@@ -104,6 +105,10 @@ function normalizeCustomer(raw: unknown): FirstLevelCustomer | null {
     name,
     email: stringField(nested, "emailAddress", "email") || undefined,
     rank: stringField(nested, "rank") || undefined,
+    avatar:
+      resolveCustomerImageUrl(
+        stringField(nested, "profileimage", "profileImage", "profile_image")
+      ) ?? undefined,
   };
 }
 

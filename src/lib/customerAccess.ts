@@ -5,7 +5,20 @@ export type CustomerAccess = {
   enableDashboard: boolean;
   subscribe: boolean;
   allowed: boolean;
+  profileImageUrl: string | null;
 };
+
+export function resolveCustomerImageUrl(
+  path: string | null | undefined
+): string | null {
+  if (!path || typeof path !== "string") return null;
+  const trimmed = path.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const base = getApiBaseUrl().replace(/\/$/, "");
+  const rel = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${base}${rel}`;
+}
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -50,6 +63,7 @@ export function parseCustomerAccess(data: unknown): CustomerAccess {
 
   let enableDashboard = false;
   let subscribe = false;
+  let profileImage: string | null = null;
 
   for (const record of records) {
     const dashboardFlag = pickFlag(record, [
@@ -63,14 +77,23 @@ export function parseCustomerAccess(data: unknown): CustomerAccess {
       "issubscribe",
       "issubscribed",
     ]);
+    const imageFlag = pickFlag(record, [
+      "profileimage",
+      "profile_image",
+      "profilephoto",
+    ]);
     if (dashboardFlag !== undefined) enableDashboard = isTrueFlag(dashboardFlag);
     if (subscribeFlag !== undefined) subscribe = isTrueFlag(subscribeFlag);
+    if (typeof imageFlag === "string" && imageFlag.trim()) {
+      profileImage = imageFlag.trim();
+    }
   }
 
   return {
     enableDashboard,
     subscribe,
     allowed: enableDashboard && subscribe,
+    profileImageUrl: resolveCustomerImageUrl(profileImage),
   };
 }
 
