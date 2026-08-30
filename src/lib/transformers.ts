@@ -5,6 +5,7 @@ import type {
   PremiumDashboardData,
   RankCriteriaSummaryItem,
   RankProgressItem,
+  SelfStakingProgress,
   VolumeProgress,
 } from "./types";
 import { decodeJwtEmail, formatMtht, formatNumber, formatUsd } from "./format";
@@ -52,11 +53,27 @@ const NFT_PRICE_RANGES = [
 
 const DEFAULT_RANK_TABS = Array.from({ length: 10 }, (_, i) => `STAR ${i + 1}`);
 
+export const SELF_STAKING_USD: Record<string, number> = {
+  "STAR 1": 500,
+  "STAR 2": 1000,
+  "STAR 3": 2500,
+  "STAR 4": 5000,
+  "STAR 5": 25000,
+  "STAR 6": 50000,
+  "STAR 7": 100000,
+  "STAR 8": 100000,
+  "STAR 9": 100000,
+  "STAR 10": 100000,
+};
+
 const DEFAULT_RANK_CRITERIA_SUMMARY: RankCriteriaSummaryItem[] = [
-  { rank: "STAR 1", requirement: "$5000 in power leg and $5000 in other legs (L1-L5 volume)" },
+  {
+    rank: "STAR 1",
+    requirement: `$5000 in power leg and $5000 in other legs (L1-L5 volume) + $${SELF_STAKING_USD["STAR 1"]} active self staking`,
+  },
   ...Array.from({ length: 9 }, (_, i) => ({
     rank: `STAR ${i + 2}`,
-    requirement: `3 STAR ${i + 1} achievers in Level 1 or 2 in 3 different legs`,
+    requirement: `3 STAR ${i + 1} achievers in Level 1 or 2 in 3 different legs + $${SELF_STAKING_USD[`STAR ${i + 2}`]} active self staking`,
   })),
 ];
 function buildUserProfile(
@@ -208,6 +225,20 @@ export function isLegsProgress(
   progress: RankProgressItem["progress"]
 ): progress is LegsProgress {
   return progress.type === "legs";
+}
+
+export function resolveSelfStaking(rank: RankProgressItem): SelfStakingProgress {
+  const fromApi = rank.selfStaking ?? rank.progress?.selfStaking;
+  if (fromApi) return fromApi;
+
+  const targetUsd = SELF_STAKING_USD[rank.rank] ?? 0;
+  return {
+    currentUsd: 0,
+    targetUsd,
+    achieved: false,
+    remainingUsd: targetUsd,
+    color: "grey",
+  };
 }
 
 export function getNextRankItem(

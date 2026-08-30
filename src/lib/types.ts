@@ -56,9 +56,19 @@ export interface VolumeLegItem {
   isPowerLeg?: boolean;
 }
 
+export interface SelfStakingProgress {
+  currentUsd: number;
+  targetUsd: number;
+  achieved: boolean;
+  remainingUsd: number;
+  color: string;
+}
+
 export interface VolumeProgress {
   type: "volume";
   detailsLoaded?: boolean;
+  communityAchieved?: boolean;
+  selfStaking?: SelfStakingProgress;
   powerLeg: {
     legId: string;
     name: string;
@@ -127,6 +137,8 @@ export interface LegSlot {
 export interface LegsProgress {
   type: "legs";
   detailsLoaded?: boolean;
+  communityAchieved?: boolean;
+  selfStaking?: SelfStakingProgress;
   requiredRank: string;
   requiredLegCount: number;
   qualifiedLegCount: number;
@@ -148,6 +160,7 @@ export interface RankProgressItem {
   status: string;
   achieved: boolean;
   detailsLoaded?: boolean;
+  selfStaking?: SelfStakingProgress;
   progress: VolumeProgress | LegsProgress;
 }
 

@@ -29,6 +29,7 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 import { useState, useEffect } from "react";
 import type {
@@ -49,6 +50,7 @@ import {
   isVolumeProgress,
   legStatusClasses,
   rankTabStatusClasses,
+  resolveSelfStaking,
 } from "@/lib/transformers";
 import { formatUsd, progressPercent } from "@/lib/format";
 import { fetchBackendJson } from "@/lib/clientApi";
@@ -346,6 +348,7 @@ function BoosterAchieversCard({
 function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) {
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
   const total = nftPriceData.reduce((s, d) => s + d.count, 0);
+  const selected = nftPriceData.find((item) => item.range === selectedRange);
 
   function toggleRange(range: string) {
     setSelectedRange((current) => (current === range ? null : range));
@@ -403,18 +406,40 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                   );
                 })}
               </Pie>
+              <Tooltip
+                cursor={false}
+                content={({ active, payload }) => {
+                  if (!active || !payload?.[0]) return null;
+                  const item = payload[0].payload as NftPriceChartData;
+                  return (
+                    <div className="rounded-lg border border-[#1a2240] bg-[#0a0f24] px-2.5 py-1.5 shadow-xl">
+                      <p className="text-[10px] font-semibold text-white">{item.range}</p>
+                      <p className="text-[10px] text-cyan-300 mt-0.5">
+                        {formatUsd(item.valueUsd, true)}
+                      </p>
+                      <p className="text-[9px] text-slate-500">
+                        {item.count.toLocaleString()} NFTs · {item.percent}%
+                      </p>
+                    </div>
+                  );
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[8px] text-slate-500">Total NFTs</span>
-            <span className="text-xs font-bold text-white">
-              {total.toLocaleString()}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2">
+            <span className="text-[8px] text-slate-500">
+              {selected ? "USDT" : "Total NFTs"}
+            </span>
+            <span className="text-[10px] sm:text-xs font-bold text-white text-center leading-tight">
+              {selected
+                ? formatUsd(selected.valueUsd, true)
+                : total.toLocaleString()}
             </span>
           </div>
         </div>
         <div className="w-full sm:flex-1 space-y-1">
-          {nftPriceData.map(({ range, count, percent, color }) => {
-            const selected = selectedRange === range;
+          {nftPriceData.map(({ range, count, percent, color, valueUsd }) => {
+            const isSelected = selectedRange === range;
             return (
               <button
                 key={range}
@@ -422,7 +447,7 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                 onClick={() => toggleRange(range)}
                 className="w-full flex items-center gap-1.5 min-w-0 rounded-md px-1 py-0.5 text-left transition-all"
                 style={
-                  selected
+                  isSelected
                     ? {
                         backgroundColor: `${color}22`,
                         boxShadow: `inset 0 0 0 1px ${color}`,
@@ -434,18 +459,20 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{
                     backgroundColor: color,
-                    boxShadow: selected ? `0 0 6px ${color}` : undefined,
+                    boxShadow: isSelected ? `0 0 6px ${color}` : undefined,
                   }}
                 />
                 <span
                   className={`text-[9px] flex-1 truncate ${
-                    selected ? "text-white font-semibold" : "text-slate-400"
+                    isSelected ? "text-white font-semibold" : "text-slate-400"
                   }`}
                 >
                   {range}
                 </span>
                 <span className="text-[9px] text-white font-medium flex-shrink-0">
-                  {count.toLocaleString()}
+                  {isSelected
+                    ? formatUsd(valueUsd, true)
+                    : count.toLocaleString()}
                 </span>
                 <span className="text-[9px] text-slate-500 w-10 text-right flex-shrink-0">
                   {percent}%
@@ -481,6 +508,47 @@ function RankStatusBadge({ status }: { status: string }) {
   );
 }
 
+function SelfStakingRequirement({ rank }: { rank: RankProgressItem }) {
+  const staking = resolveSelfStaking(rank);
+  const percent = progressPercent(staking.currentUsd, staking.targetUsd);
+
+  return (
+    <div className="p-3 rounded-lg bg-[#131a35] border border-[#1a2240]">
+      <div className="flex justify-between mb-1.5">
+        <span className="text-[10px] text-slate-400">Active Self Staking</span>
+        <span
+          className={`text-[10px] ${staking.achieved ? "text-emerald-400" : "text-slate-400"}`}
+        >
+          {percent}%
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-[#1a2240] overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${barColorFromApi(staking.color, staking.achieved)}`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <div className="flex items-center justify-between mt-1.5 gap-2">
+        <p className="text-[9px] text-slate-600">
+          {formatUsd(staking.currentUsd)} / {formatUsd(staking.targetUsd)}
+        </p>
+        <span
+          className={`text-[9px] ${staking.achieved ? "text-emerald-400" : "text-amber-400"}`}
+        >
+          {staking.achieved
+            ? "Achieved"
+            : staking.remainingUsd > 0
+              ? `Need ${formatUsd(staking.remainingUsd)} more`
+              : "Needed"}
+        </span>
+      </div>
+      <p className="text-[9px] text-slate-600 mt-1">
+        Your own active NFT purchases, summed by amount (USD)
+      </p>
+    </div>
+  );
+}
+
 function VolumeProgressPanel({ rank }: { rank: RankProgressItem }) {
   if (!isVolumeProgress(rank.progress)) return null;
 
@@ -494,6 +562,7 @@ function VolumeProgressPanel({ rank }: { rank: RankProgressItem }) {
         <p className="text-[10px] text-slate-500">{rank.criteria}</p>
         <RankStatusBadge status={rank.status} />
       </div>
+      <SelfStakingRequirement rank={rank} />
       <div>
         <div className="flex justify-between mb-1.5">
           <span className="text-[10px] text-slate-400">
@@ -642,6 +711,7 @@ function LegsProgressPanel({ rank }: { rank: RankProgressItem }) {
         <p className="text-[10px] text-slate-500">{rank.criteria}</p>
         <RankStatusBadge status={rank.status} />
       </div>
+      <SelfStakingRequirement rank={rank} />
 
       <div className="p-3 rounded-lg bg-[#131a35] border border-[#1a2240]">
         <p className="text-[10px] text-slate-400 mb-1">Progress to {rank.rank}</p>
@@ -835,9 +905,16 @@ function RankCriteriaSection({
         ) : activeRank ? (
           activeRank.progress?.detailsLoaded === false &&
           activeRank.status === "locked" ? (
-            <p className="text-xs text-slate-500">
-              Complete previous ranks to unlock leg details for this rank.
-            </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] text-slate-500">{activeRank.criteria}</p>
+                <RankStatusBadge status={activeRank.status} />
+              </div>
+              <SelfStakingRequirement rank={activeRank} />
+              <p className="text-xs text-slate-500">
+                Complete previous ranks to unlock leg details for this rank.
+              </p>
+            </div>
           ) : isVolumeProgress(activeRank.progress) ? (
             <VolumeProgressPanel rank={activeRank} />
           ) : (
