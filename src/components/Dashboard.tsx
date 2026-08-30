@@ -350,12 +350,8 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
     setSelectedRange((current) => (current === range ? null : range));
   }
 
-  function rangeFromPieEvent(entry: { payload?: NftPriceChartData } | NftPriceChartData) {
-    return (
-      ("payload" in entry ? entry.payload?.range : undefined) ??
-      ("range" in entry ? entry.range : undefined) ??
-      ""
-    );
+  function rangeFromPieEvent(entry: { payload?: NftPriceChartData }) {
+    return entry.payload?.range ?? "";
   }
 
   if (nftPriceData.length === 0) {
@@ -389,11 +385,11 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                 paddingAngle={2}
                 dataKey="valueUsd"
                 onClick={(entry) => {
-                  const range = rangeFromPieEvent(entry as NftPriceChartData);
+                  const range = rangeFromPieEvent(entry);
                   if (range) toggleRange(range);
                 }}
                 onMouseEnter={(entry) => {
-                  const range = rangeFromPieEvent(entry as NftPriceChartData);
+                  const range = rangeFromPieEvent(entry);
                   if (range) setHoveredRange(range);
                 }}
                 onMouseLeave={() => setHoveredRange(null)}
