@@ -135,26 +135,24 @@ function ProfileBanner({
 
   return (
     <div className="mx-3 sm:mx-4 mb-4 rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24]">
-      <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
-          <div className="relative flex-shrink-0">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#1a2240] border-2 border-[#2a3458]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatarSrc}
-                alt={user.name}
-                className="w-full h-full object-cover"
-                onError={() => {
-                  const fallback = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email || user.name)}`;
-                  if (avatarSrc !== fallback) setAvatarSrc(fallback);
-                }}
-              />
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">
+      <div className="flex flex-col sm:flex-row sm:items-stretch">
+        <div className="flex items-stretch min-w-0 flex-1">
+          <div className="relative w-[5.75rem] sm:w-32 flex-shrink-0 self-stretch min-h-[7.5rem] bg-[#1a2240]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={avatarSrc}
+              alt={user.name}
+              className="absolute inset-0 w-full h-full object-cover object-center"
+              onError={() => {
+                const fallback = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email || user.name)}`;
+                if (avatarSrc !== fallback) setAvatarSrc(fallback);
+              }}
+            />
+            <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">
               <CheckCircle2 className="w-3 h-3 text-white" />
             </div>
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 p-3 sm:p-4">
             <h2 className="font-bold text-white text-sm sm:text-base tracking-wide truncate">
               {user.name}
             </h2>
@@ -184,10 +182,12 @@ function ProfileBanner({
             </div>
           </div>
         </div>
-        <AccountStatusPanel
-          key={customerId ?? "self"}
-          customerId={customerId}
-        />
+        <div className="p-3 pt-0 sm:p-4 sm:pl-0 sm:min-w-[220px] sm:max-w-sm sm:self-stretch">
+          <AccountStatusPanel
+            key={customerId ?? "self"}
+            customerId={customerId}
+          />
+        </div>
       </div>
     </div>
   );
