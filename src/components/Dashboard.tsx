@@ -344,7 +344,12 @@ function BoosterAchieversCard({
 }
 
 function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) {
+  const [selectedRange, setSelectedRange] = useState<string | null>(null);
   const total = nftPriceData.reduce((s, d) => s + d.count, 0);
+
+  function toggleRange(range: string) {
+    setSelectedRange((current) => (current === range ? null : range));
+  }
 
   if (nftPriceData.length === 0) {
     return (
@@ -371,13 +376,31 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                 cx="50%"
                 cy="50%"
                 innerRadius={32}
-                outerRadius={52}
+                outerRadius={(entry: NftPriceChartData) =>
+                  selectedRange && entry.range === selectedRange ? 58 : 52
+                }
                 paddingAngle={2}
-                dataKey="count"
+                dataKey="valueUsd"
+                onClick={(entry) => {
+                  const range = String(entry?.payload?.range ?? entry?.range ?? "");
+                  if (range) toggleRange(range);
+                }}
+                style={{ cursor: "pointer", outline: "none" }}
               >
-                {nftPriceData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
+                {nftPriceData.map((entry) => {
+                  const selected = selectedRange === entry.range;
+                  const dimmed = !!selectedRange && !selected;
+                  return (
+                    <Cell
+                      key={entry.range}
+                      fill={entry.color}
+                      fillOpacity={dimmed ? 0.28 : 1}
+                      stroke={selected ? "#ffffff" : "#0a0f24"}
+                      strokeWidth={selected ? 2 : 1}
+                      style={{ cursor: "pointer", outline: "none" }}
+                    />
+                  );
+                })}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
@@ -388,24 +411,47 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
             </span>
           </div>
         </div>
-        <div className="w-full sm:flex-1 space-y-1.5">
-          {nftPriceData.map(({ range, count, percent, color }) => (
-            <div key={range} className="flex items-center gap-1.5 min-w-0">
-              <div
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: color }}
-              />
-              <span className="text-[9px] text-slate-400 flex-1 truncate">
-                {range}
-              </span>
-              <span className="text-[9px] text-white font-medium flex-shrink-0">
-                {count.toLocaleString()}
-              </span>
-              <span className="text-[9px] text-slate-500 w-8 text-right flex-shrink-0">
-                {percent}%
-              </span>
-            </div>
-          ))}
+        <div className="w-full sm:flex-1 space-y-1">
+          {nftPriceData.map(({ range, count, percent, color }) => {
+            const selected = selectedRange === range;
+            return (
+              <button
+                key={range}
+                type="button"
+                onClick={() => toggleRange(range)}
+                className="w-full flex items-center gap-1.5 min-w-0 rounded-md px-1 py-0.5 text-left transition-all"
+                style={
+                  selected
+                    ? {
+                        backgroundColor: `${color}22`,
+                        boxShadow: `inset 0 0 0 1px ${color}`,
+                      }
+                    : undefined
+                }
+              >
+                <div
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: color,
+                    boxShadow: selected ? `0 0 6px ${color}` : undefined,
+                  }}
+                />
+                <span
+                  className={`text-[9px] flex-1 truncate ${
+                    selected ? "text-white font-semibold" : "text-slate-400"
+                  }`}
+                >
+                  {range}
+                </span>
+                <span className="text-[9px] text-white font-medium flex-shrink-0">
+                  {count.toLocaleString()}
+                </span>
+                <span className="text-[9px] text-slate-500 w-10 text-right flex-shrink-0">
+                  {percent}%
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

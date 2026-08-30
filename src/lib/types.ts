@@ -173,6 +173,7 @@ export interface BoosterAchieverData {
 export interface NftPriceChartData {
   range: string;
   count: number;
+  valueUsd: number;
   percent: number;
   color: string;
 }

@@ -43,11 +43,11 @@ const NFT_CHART_COLORS = [
 ];
 
 const NFT_PRICE_RANGES = [
-  { min: 0, max: 99, label: "Under $100" },
-  { min: 100, max: 499, label: "$100 - $499" },
-  { min: 500, max: 999, label: "$500 - $999" },
-  { min: 1000, max: 4999, label: "$1,000 - $4,999" },
-  { min: 5000, max: Infinity, label: "$5,000+" },
+  { min: 0, max: 500, label: "≤ $500" },
+  { min: 1000, max: 2500, label: "$1000 - $2500" },
+  { min: 5000, max: 10000, label: "$5000 - $10000" },
+  { min: 25000, max: 30000, label: "$25000 - $30000" },
+  { min: 50000, max: Infinity, label: "$50000+" },
 ];
 
 const DEFAULT_RANK_TABS = Array.from({ length: 10 }, (_, i) => `STAR ${i + 1}`);
@@ -136,18 +136,23 @@ function buildNftPriceChart(
       (item) => item.priceUsd >= range.min && item.priceUsd <= range.max
     );
     const count = items.reduce((sum, item) => sum + item.count, 0);
+    const valueUsd = items.reduce(
+      (sum, item) => sum + item.count * item.priceUsd,
+      0
+    );
     return {
       range: range.label,
       count,
+      valueUsd,
       color: NFT_CHART_COLORS[index],
     };
-  }).filter((item) => item.count > 0);
+  }).filter((item) => item.count > 0 || item.valueUsd > 0);
 
-  const total = grouped.reduce((sum, item) => sum + item.count, 0);
+  const totalUsd = grouped.reduce((sum, item) => sum + item.valueUsd, 0);
 
   return grouped.map((item) => ({
     ...item,
-    percent: total > 0 ? Math.round((item.count / total) * 1000) / 10 : 0,
+    percent: totalUsd > 0 ? Math.round((item.valueUsd / totalUsd) * 1000) / 10 : 0,
   }));
 }
 
