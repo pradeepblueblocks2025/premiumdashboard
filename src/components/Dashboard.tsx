@@ -382,7 +382,8 @@ function NFTDonutChart({ nftPriceData }: { nftPriceData: NftPriceChartData[] }) 
                 paddingAngle={2}
                 dataKey="valueUsd"
                 onClick={(entry) => {
-                  const range = String(entry?.payload?.range ?? entry?.range ?? "");
+                  const payload = entry?.payload as NftPriceChartData | undefined;
+                  const range = payload?.range ?? "";
                   if (range) toggleRange(range);
                 }}
                 style={{ cursor: "pointer", outline: "none" }}

@@ -246,7 +246,8 @@ export default function AffiliateLegsPie({
               stroke="#070b1a"
               strokeWidth={2}
               onClick={(entry) => {
-                const key = String(entry?.payload?.key ?? entry?.key ?? "");
+                const payload = entry?.payload as PieSlice | undefined;
+                const key = payload?.key ?? "";
                 if (key) toggleSelected(key);
               }}
               style={{ cursor: "pointer", outline: "none" }}
