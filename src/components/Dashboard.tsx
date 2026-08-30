@@ -46,6 +46,7 @@ import {
   rankTabStatusClasses,
   resolveSelfStaking,
 } from "@/lib/transformers";
+import { executiveAvatarUrl } from "@/lib/avatar";
 import { formatUsd, progressPercent } from "@/lib/format";
 import { fetchBackendJson } from "@/lib/clientApi";
 import { mergeRankDetail } from "@/lib/api";
@@ -142,9 +143,11 @@ function ProfileBanner({
             <img
               src={avatarSrc}
               alt={user.name}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className={`absolute inset-0 w-full h-full object-center bg-[#1a2240] ${
+                avatarSrc.includes("dicebear.com") ? "object-contain" : "object-cover"
+              }`}
               onError={() => {
-                const fallback = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email || user.name)}`;
+                const fallback = executiveAvatarUrl(user.email || user.name);
                 if (avatarSrc !== fallback) setAvatarSrc(fallback);
               }}
             />

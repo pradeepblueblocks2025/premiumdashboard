@@ -1,3 +1,4 @@
+import { executiveAvatarUrl } from "./avatar";
 import type { PremiumDashboardData, DashboardViewModel, FirstLevelCustomer } from "./types";
 import { transformDashboardData } from "./transformers";
 import { decodeJwtEmail, formatMtht } from "./format";
@@ -78,7 +79,7 @@ export function buildUserProfileFromToken(token: string) {
     name: nameFromEmail,
     email,
     balance: formatMtht(0),
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
+    avatar: executiveAvatarUrl(email),
   };
 }
 

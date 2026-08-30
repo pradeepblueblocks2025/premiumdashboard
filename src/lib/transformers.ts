@@ -8,6 +8,7 @@ import type {
   SelfStakingProgress,
   VolumeProgress,
 } from "./types";
+import { executiveAvatarUrl } from "./avatar";
 import { decodeJwtEmail, formatMtht, formatNumber, formatUsd } from "./format";
 
 const RANK_COLORS = [
@@ -76,10 +77,6 @@ const DEFAULT_RANK_CRITERIA_SUMMARY: RankCriteriaSummaryItem[] = [
     requirement: `3 STAR ${i + 1} achievers in Level 1 or 2 in 3 different legs + $${SELF_STAKING_USD[`STAR ${i + 2}`]} active self staking`,
   })),
 ];
-function placeholderAvatar(seed: string): string {
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
-}
-
 function buildUserProfile(
   data: PremiumDashboardData,
   token: string,
@@ -92,7 +89,7 @@ function buildUserProfile(
       name: viewingCustomer.name.toUpperCase(),
       email: viewingCustomer.email ?? "",
       balance: formatMtht(data.activeStaking.totalActiveMtht),
-      avatar: viewingCustomer.avatar || placeholderAvatar(seed),
+      avatar: viewingCustomer.avatar || executiveAvatarUrl(seed),
       viewingDownline: true,
     };
   }
@@ -107,7 +104,7 @@ function buildUserProfile(
     name: nameFromEmail,
     email,
     balance: formatMtht(data.activeStaking.totalActiveMtht),
-    avatar: profileImageUrl || placeholderAvatar(email),
+    avatar: profileImageUrl || executiveAvatarUrl(email),
   };
 }
 
