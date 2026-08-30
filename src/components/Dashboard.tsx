@@ -182,7 +182,7 @@ function ProfileBanner({
             </div>
           </div>
         </div>
-        <div className="p-3 pt-0 sm:p-4 sm:pl-0 sm:min-w-[220px] sm:max-w-sm sm:self-stretch">
+        <div className="px-3 pb-3 pt-2 sm:p-4 sm:pl-0 sm:pt-4 sm:min-w-[220px] sm:max-w-sm sm:self-stretch">
           <AccountStatusPanel
             key={customerId ?? "self"}
             customerId={customerId}
