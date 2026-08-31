@@ -135,10 +135,9 @@ function ProfileBanner({
   }, [user.avatar]);
 
   return (
-    <div className="mx-3 sm:mx-4 mb-4 rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24]">
-      <div className="flex flex-col sm:flex-row sm:items-stretch">
-        <div className="flex items-stretch min-w-0 flex-1">
-          <div className="relative w-16 sm:w-[4.75rem] flex-shrink-0 self-stretch bg-[#1a2240]">
+    <div className="mx-3 sm:mx-4 mb-4 flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-stretch sm:rounded-xl sm:overflow-hidden sm:border sm:border-[#1a2240] sm:grid-bg sm:bg-[#0a0f24]">
+      <div className="rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24] sm:border-0 sm:rounded-none sm:bg-transparent flex items-stretch min-w-0 flex-1">
+        <div className="relative w-16 sm:w-[4.75rem] flex-shrink-0 self-stretch bg-[#1a2240]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={avatarSrc}
@@ -183,13 +182,12 @@ function ProfileBanner({
               </p>
             </div>
           </div>
-        </div>
-        <div className="px-2.5 pb-2.5 pt-1.5 sm:p-3 sm:pl-0 sm:min-w-[176px] sm:max-w-[200px] sm:self-stretch">
-          <AccountStatusPanel
-            key={customerId ?? "self"}
-            customerId={customerId}
-          />
-        </div>
+      </div>
+      <div className="sm:p-3 sm:pl-0 sm:min-w-[176px] sm:max-w-[200px] sm:self-stretch">
+        <AccountStatusPanel
+          key={customerId ?? "self"}
+          customerId={customerId}
+        />
       </div>
     </div>
   );

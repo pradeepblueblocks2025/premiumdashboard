@@ -115,7 +115,7 @@ function StatusGauge({
   }, [t]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[168px]">
+    <div className="relative mx-auto w-full max-w-[240px] sm:max-w-[168px]">
       <svg viewBox="0 0 200 98" className="w-full h-auto overflow-visible">
         {GAUGE_SEGMENTS.map((segment) => (
           <path
