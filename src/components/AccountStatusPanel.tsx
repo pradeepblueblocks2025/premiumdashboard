@@ -73,15 +73,16 @@ const GAUGE_SEGMENTS = [
 ];
 
 const CX = 100;
-const CY = 108;
-const R = 78;
-const STROKE = 14;
+const CY = 86;
+const R = 62;
+const STROKE = 10;
+const NEEDLE_LEN = R - STROKE / 2 - 4;
 
-function pointOnArc(t: number) {
+function pointOnArc(t: number, radius = R) {
   const theta = Math.PI * (1 - t);
   return {
-    x: CX + R * Math.cos(theta),
-    y: CY - R * Math.sin(theta),
+    x: CX + radius * Math.cos(theta),
+    y: CY - radius * Math.sin(theta),
   };
 }
 
@@ -103,11 +104,19 @@ function StatusGauge({
   labelClass: string;
 }) {
   const t = Math.min(1, Math.max(0, score / 100));
-  const knob = useMemo(() => pointOnArc(t), [t]);
+  const needle = useMemo(() => {
+    const theta = Math.PI * (1 - t);
+    const tip = pointOnArc(t, NEEDLE_LEN);
+    const px = Math.sin(theta);
+    const py = Math.cos(theta);
+    return {
+      points: `${tip.x},${tip.y} ${CX - px * 4.5},${CY - py * 4.5} ${CX + px * 4.5},${CY + py * 4.5}`,
+    };
+  }, [t]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[220px]">
-      <svg viewBox="0 0 200 128" className="w-full h-auto overflow-visible">
+    <div className="relative mx-auto w-full max-w-[168px]">
+      <svg viewBox="0 0 200 98" className="w-full h-auto overflow-visible">
         {GAUGE_SEGMENTS.map((segment) => (
           <path
             key={segment.color}
@@ -119,33 +128,34 @@ function StatusGauge({
           />
         ))}
         <path
-          d={arcPath(0, 0.04)}
+          d={arcPath(0, 0.05)}
           fill="none"
           stroke="#ef4444"
           strokeWidth={STROKE}
           strokeLinecap="round"
         />
         <path
-          d={arcPath(0.96, 1)}
+          d={arcPath(0.95, 1)}
           fill="none"
           stroke="#22c55e"
           strokeWidth={STROKE}
           strokeLinecap="round"
         />
-        <circle
-          cx={knob.x}
-          cy={knob.y}
-          r={9}
-          fill="#ffffff"
+        <polygon
+          points={needle.points}
+          fill="#e2e8f0"
           stroke="#94a3b8"
-          strokeWidth={2.5}
+          strokeWidth={0.75}
+          strokeLinejoin="round"
         />
+        <circle cx={CX} cy={CY} r={5.5} fill="#f8fafc" stroke="#64748b" strokeWidth={1.5} />
+        <circle cx={CX} cy={CY} r={2} fill="#334155" />
       </svg>
-      <div className="absolute inset-x-0 bottom-1 flex flex-col items-center pointer-events-none">
-        <span className="text-3xl font-bold text-white leading-none tabular-nums">
+      <div className="flex flex-col items-center -mt-0.5 pb-0.5">
+        <span className="text-lg font-bold text-white leading-none tabular-nums">
           {value}
         </span>
-        <span className={`text-[11px] mt-1 ${labelClass}`}>{label}</span>
+        <span className={`text-[9px] mt-0.5 ${labelClass}`}>{label}</span>
       </div>
     </div>
   );
@@ -196,7 +206,7 @@ export default function AccountStatusPanel({
 
   if (loading && !status) {
     return (
-      <div className="w-full h-full rounded-2xl border border-[#1a2240] bg-[#0d1228]/80 px-4 py-3 flex flex-col items-center justify-center gap-2 min-h-[160px]">
+      <div className="w-full h-full rounded-2xl border border-[#1a2240] bg-[#0d1228]/80 px-3 py-2 flex flex-col items-center justify-center gap-1.5 min-h-[108px]">
         <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
         <span className="text-[11px] text-slate-500">Checking status...</span>
       </div>
@@ -208,11 +218,11 @@ export default function AccountStatusPanel({
   const theme = THEME[status.id];
   const score = ratioToGaugeScore(status.ratio);
   const value =
-    status.ratio == null ? "—" : String(Math.round(status.ratio * 100));
+    status.ratio == null ? "—" : `${Math.round(status.ratio * 100)}%`;
 
   return (
     <div
-      className={`w-full h-full rounded-2xl border px-3 pt-3 pb-2 ${theme.border} ${theme.bg} ${theme.glow}`}
+      className={`w-full h-full rounded-2xl border px-2.5 pt-2 pb-1 ${theme.border} ${theme.bg} ${theme.glow}`}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
         <p className="text-[11px] text-slate-400">Account Status</p>

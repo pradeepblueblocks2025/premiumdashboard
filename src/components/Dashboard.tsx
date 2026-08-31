@@ -138,7 +138,7 @@ function ProfileBanner({
     <div className="mx-3 sm:mx-4 mb-4 rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24]">
       <div className="flex flex-col sm:flex-row sm:items-stretch">
         <div className="flex items-stretch min-w-0 flex-1">
-          <div className="relative w-[5.75rem] sm:w-32 flex-shrink-0 self-stretch min-h-[7.5rem] bg-[#1a2240]">
+          <div className="relative w-16 sm:w-[4.75rem] flex-shrink-0 self-stretch bg-[#1a2240]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={avatarSrc}
@@ -154,8 +154,8 @@ function ProfileBanner({
               <CheckCircle2 className="w-3 h-3 text-white" />
             </div>
           </div>
-          <div className="flex-1 min-w-0 p-3 sm:p-4">
-            <h2 className="font-bold text-white text-sm sm:text-base tracking-wide truncate">
+          <div className="flex-1 min-w-0 p-2.5 sm:p-3">
+            <h2 className="font-bold text-white text-sm tracking-wide truncate">
               {user.name}
             </h2>
             {user.viewingDownline && (
@@ -163,10 +163,10 @@ function ProfileBanner({
                 Viewing first-level customer
               </p>
             )}
-            <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email}</p>
-            <div className="mt-2">
+            <p className="text-[11px] text-slate-500 mt-0.5 truncate">{user.email}</p>
+            <div className="mt-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-400">Total Active Staking</span>
+                <span className="text-[11px] text-slate-400">Total Active Staking</span>
                 <button
                   onClick={() => setShowBalance(!showBalance)}
                   className="text-slate-500 hover:text-slate-300"
@@ -178,13 +178,13 @@ function ProfileBanner({
                   )}
                 </button>
               </div>
-              <p className="text-xl sm:text-2xl font-bold gradient-text mt-0.5 break-all sm:break-normal">
+              <p className="text-lg sm:text-xl font-bold gradient-text mt-0.5 break-all sm:break-normal">
                 {showBalance ? user.balance : "••••••••"}
               </p>
             </div>
           </div>
         </div>
-        <div className="px-3 pb-3 pt-2 sm:p-4 sm:pl-0 sm:pt-4 sm:min-w-[220px] sm:max-w-sm sm:self-stretch">
+        <div className="px-2.5 pb-2.5 pt-1.5 sm:p-3 sm:pl-0 sm:min-w-[176px] sm:max-w-[200px] sm:self-stretch">
           <AccountStatusPanel
             key={customerId ?? "self"}
             customerId={customerId}
