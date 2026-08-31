@@ -73,10 +73,10 @@ const GAUGE_SEGMENTS = [
 ];
 
 const CX = 100;
-const CY = 86;
-const R = 62;
-const STROKE = 10;
-const NEEDLE_LEN = R - STROKE / 2 - 4;
+const CY = 72;
+const R = 54;
+const STROKE = 9;
+const NEEDLE_LEN = R - STROKE / 2 - 2;
 
 function pointOnArc(t: number, radius = R) {
   const theta = Math.PI * (1 - t);
@@ -107,16 +107,14 @@ function StatusGauge({
   const needle = useMemo(() => {
     const theta = Math.PI * (1 - t);
     const tip = pointOnArc(t, NEEDLE_LEN);
-    const px = Math.sin(theta);
-    const py = Math.cos(theta);
-    return {
-      points: `${tip.x},${tip.y} ${CX - px * 4.5},${CY - py * 4.5} ${CX + px * 4.5},${CY + py * 4.5}`,
-    };
+    const px = Math.sin(theta) * 3;
+    const py = Math.cos(theta) * 3;
+    return `${tip.x},${tip.y} ${CX - px},${CY - py} ${CX + px},${CY + py}`;
   }, [t]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[240px] sm:max-w-[168px]">
-      <svg viewBox="0 0 200 98" className="w-full h-auto overflow-visible">
+    <div className="relative mx-auto w-full max-w-[200px] lg:max-w-[168px]">
+      <svg viewBox="0 0 200 80" className="block w-full h-auto">
         {GAUGE_SEGMENTS.map((segment) => (
           <path
             key={segment.color}
@@ -142,17 +140,17 @@ function StatusGauge({
           strokeLinecap="round"
         />
         <polygon
-          points={needle.points}
-          fill="#e2e8f0"
+          points={needle}
+          fill="#f8fafc"
           stroke="#94a3b8"
-          strokeWidth={0.75}
+          strokeWidth={0.6}
           strokeLinejoin="round"
         />
-        <circle cx={CX} cy={CY} r={5.5} fill="#f8fafc" stroke="#64748b" strokeWidth={1.5} />
-        <circle cx={CX} cy={CY} r={2} fill="#334155" />
+        <circle cx={CX} cy={CY} r={4.5} fill="#f8fafc" stroke="#64748b" strokeWidth={1.25} />
+        <circle cx={CX} cy={CY} r={1.6} fill="#334155" />
       </svg>
-      <div className="flex flex-col items-center -mt-0.5 pb-0.5">
-        <span className="text-lg font-bold text-white leading-none tabular-nums">
+      <div className="absolute inset-x-0 top-[48%] flex flex-col items-center pointer-events-none">
+        <span className="text-base font-bold text-white leading-none tabular-nums">
           {value}
         </span>
         <span className={`text-[9px] mt-0.5 ${labelClass}`}>{label}</span>
@@ -206,7 +204,7 @@ export default function AccountStatusPanel({
 
   if (loading && !status) {
     return (
-      <div className="w-full h-full rounded-2xl border border-[#1a2240] bg-[#0d1228]/80 px-3 py-2 flex flex-col items-center justify-center gap-1.5 min-h-[108px]">
+      <div className="w-full rounded-2xl border border-[#1a2240] bg-[#0d1228]/80 px-3 py-2 flex flex-col items-center justify-center gap-1 min-h-[96px]">
         <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
         <span className="text-[11px] text-slate-500">Checking status...</span>
       </div>
@@ -222,7 +220,7 @@ export default function AccountStatusPanel({
 
   return (
     <div
-      className={`w-full h-full rounded-2xl border px-2.5 pt-2 pb-1 ${theme.border} ${theme.bg} ${theme.glow}`}
+      className={`w-full rounded-2xl border px-2.5 pt-1.5 pb-1 ${theme.border} ${theme.bg} ${theme.glow}`}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
         <p className="text-[11px] text-slate-400">Account Status</p>

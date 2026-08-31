@@ -135,9 +135,9 @@ function ProfileBanner({
   }, [user.avatar]);
 
   return (
-    <div className="mx-3 sm:mx-4 mb-4 flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-stretch sm:rounded-xl sm:overflow-hidden sm:border sm:border-[#1a2240] sm:grid-bg sm:bg-[#0a0f24]">
-      <div className="rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24] sm:border-0 sm:rounded-none sm:bg-transparent flex items-stretch min-w-0 flex-1">
-        <div className="relative w-16 sm:w-[4.75rem] flex-shrink-0 self-stretch bg-[#1a2240]">
+    <div className="mx-3 sm:mx-4 mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-3 lg:rounded-xl lg:overflow-hidden lg:border lg:border-[#1a2240] lg:grid-bg lg:bg-[#0a0f24] lg:pr-3">
+      <div className="rounded-xl overflow-hidden border border-[#1a2240] grid-bg bg-[#0a0f24] lg:border-0 lg:rounded-none lg:bg-transparent flex items-stretch min-w-0 flex-1">
+        <div className="relative w-16 lg:w-[4.25rem] flex-shrink-0 self-stretch bg-[#1a2240]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={avatarSrc}
@@ -149,11 +149,11 @@ function ProfileBanner({
                 }
               }}
             />
-            <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">
-              <CheckCircle2 className="w-3 h-3 text-white" />
+            <div className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0f24]">
+              <CheckCircle2 className="w-2.5 h-2.5 text-white" />
             </div>
           </div>
-          <div className="flex-1 min-w-0 p-2.5 sm:p-3">
+          <div className="flex-1 min-w-0 px-2.5 py-2 lg:px-3 lg:py-2">
             <h2 className="font-bold text-white text-sm tracking-wide truncate">
               {user.name}
             </h2>
@@ -163,7 +163,7 @@ function ProfileBanner({
               </p>
             )}
             <p className="text-[11px] text-slate-500 mt-0.5 truncate">{user.email}</p>
-            <div className="mt-1.5">
+            <div className="mt-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] text-slate-400">Total Active Staking</span>
                 <button
@@ -177,13 +177,13 @@ function ProfileBanner({
                   )}
                 </button>
               </div>
-              <p className="text-lg sm:text-xl font-bold gradient-text mt-0.5 break-all sm:break-normal">
+              <p className="text-base lg:text-lg font-bold gradient-text mt-0.5 break-all sm:break-normal">
                 {showBalance ? user.balance : "••••••••"}
               </p>
             </div>
           </div>
       </div>
-      <div className="sm:p-3 sm:pl-0 sm:min-w-[176px] sm:max-w-[200px] sm:self-stretch">
+      <div className="lg:w-[188px] lg:flex-shrink-0">
         <AccountStatusPanel
           key={customerId ?? "self"}
           customerId={customerId}
