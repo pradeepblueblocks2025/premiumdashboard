@@ -69,3 +69,15 @@ export function accountStatusFromTotals(
 
   return { id, ratio, ...LABELS[id] };
 }
+
+/** Map affiliation ratio onto a 0–100 Fear & Greed-style arc. */
+export function ratioToGaugeScore(ratio: number | null): number {
+  if (ratio == null) return 100;
+  const percent = Math.max(0, ratio * 100);
+  if (percent <= 30) return (percent / 30) * 20;
+  if (percent <= 60) return 20 + ((percent - 30) / 30) * 20;
+  if (percent <= 100) return 40 + ((percent - 60) / 40) * 20;
+  if (percent <= 110) return 60 + ((percent - 100) / 10) * 15;
+  if (percent <= 150) return 75 + ((percent - 110) / 40) * 25;
+  return 100;
+}
