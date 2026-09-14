@@ -5,21 +5,22 @@ const DOWNLINE_STAKING_EARNED_PATH =
   "/api/v1/premium-dashboard/downline-staking-earned";
 
 export type StakingPeriodSummary = {
-  totalMtht: number;
-  totalUsdt: number;
+  totalStaking: number;
+  totalStakingUsd: number;
   count: number;
 };
 
 export type StakingEarnedData = {
+  range?: string;
   today: StakingPeriodSummary;
   yesterday: StakingPeriodSummary;
-  week: StakingPeriodSummary;
+  "7days": StakingPeriodSummary;
   month: StakingPeriodSummary;
 };
 
 const EMPTY_PERIOD: StakingPeriodSummary = {
-  totalMtht: 0,
-  totalUsdt: 0,
+  totalStaking: 0,
+  totalStakingUsd: 0,
   count: 0,
 };
 
@@ -46,8 +47,8 @@ function normalizePeriod(value: unknown): StakingPeriodSummary {
   if (!record) return EMPTY_PERIOD;
 
   return {
-    totalMtht: numberField(record, "totalStaking", "totalMtht", "mtht"),
-    totalUsdt: numberField(
+    totalStaking: numberField(record, "totalStaking", "totalMtht", "mtht"),
+    totalStakingUsd: numberField(
       record,
       "totalStakingUsd",
       "totalUsdt",
@@ -61,9 +62,10 @@ function normalizePeriod(value: unknown): StakingPeriodSummary {
 export function normalizeStakingEarned(payload: unknown): StakingEarnedData {
   const record = asRecord(payload) ?? {};
   return {
+    range: typeof record.range === "string" ? record.range : undefined,
     today: normalizePeriod(record.today),
     yesterday: normalizePeriod(record.yesterday),
-    week: normalizePeriod(record["7days"] ?? record.week),
+    "7days": normalizePeriod(record["7days"] ?? record.week),
     month: normalizePeriod(record.month),
   };
 }

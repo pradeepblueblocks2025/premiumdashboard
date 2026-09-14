@@ -183,7 +183,7 @@ export default function AccountStatusPanel({
         const affiliateTotal =
           affiliate.week.totalMtht ||
           affiliate.series.reduce((sum, point) => sum + point.mtht, 0);
-        const stakingTotal = staking.week.totalMtht;
+        const stakingTotal = staking["7days"].totalStaking;
         setStatus(
           accountStatusFromTotals(
             business.summary.totalMtht,
