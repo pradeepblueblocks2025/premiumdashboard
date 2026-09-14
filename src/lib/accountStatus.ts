@@ -16,48 +16,51 @@ export type AccountStatusResult = {
 const LABELS: Record<AccountStatusId, { label: string; hint: string }> = {
   legendary: {
     label: "Legendary",
-    hint: "Business ≥ 150% of affiliation",
+    hint: "Business ≥ 150% of affiliation + staking",
   },
   excellent: {
     label: "Excellent",
-    hint: "Business ≥ 110% of affiliation",
+    hint: "Business ≥ 110% of affiliation + staking",
   },
   good: {
     label: "Good",
-    hint: "Business matches affiliation",
+    hint: "Business matches affiliation + staking",
   },
   fair: {
     label: "Fair",
-    hint: "Business below affiliation",
+    hint: "Business below affiliation + staking",
   },
   poor: {
     label: "Poor",
-    hint: "Business ≤ 60% of affiliation",
+    hint: "Business ≤ 60% of affiliation + staking",
   },
   very_poor: {
     label: "Very Poor",
-    hint: "Business ≤ 30% of affiliation",
+    hint: "Business ≤ 30% of affiliation + staking",
   },
 };
 
 export function accountStatusFromTotals(
   business: number,
-  affiliation: number
+  affiliation: number,
+  staking = 0
 ): AccountStatusResult {
   const safeBusiness = Number.isFinite(business) ? Math.max(0, business) : 0;
   const safeAffiliate = Number.isFinite(affiliation)
     ? Math.max(0, affiliation)
     : 0;
+  const safeStaking = Number.isFinite(staking) ? Math.max(0, staking) : 0;
+  const payout = safeAffiliate + safeStaking;
 
-  if (safeBusiness <= 0 && safeAffiliate <= 0) {
+  if (safeBusiness <= 0 && payout <= 0) {
     return { id: "good", ratio: 1, ...LABELS.good };
   }
 
-  if (safeAffiliate <= 0) {
+  if (payout <= 0) {
     return { id: "legendary", ratio: null, ...LABELS.legendary };
   }
 
-  const ratio = safeBusiness / safeAffiliate;
+  const ratio = safeBusiness / payout;
 
   let id: AccountStatusId;
   if (ratio >= 1.5) id = "legendary";

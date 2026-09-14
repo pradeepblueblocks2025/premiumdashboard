@@ -7,6 +7,7 @@ import {
   type AccountStatusId,
 } from "@/lib/accountStatus";
 import { fetchLiveBusiness } from "@/lib/liveBusiness";
+import { fetchDownlineStakingEarned } from "@/lib/stakingEarned";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -173,16 +174,22 @@ export default function AccountStatusPanel({
     async (signal?: { cancelled: boolean }) => {
       setLoading(true);
       try {
-        const [business, affiliate] = await Promise.all([
+        const [business, affiliate, staking] = await Promise.all([
           fetchLiveBusiness("7days", customerId),
           fetchAffiliateEarned(customerId, "7days"),
+          fetchDownlineStakingEarned(customerId, "7days"),
         ]);
         if (signal?.cancelled) return;
         const affiliateTotal =
           affiliate.week.totalMtht ||
           affiliate.series.reduce((sum, point) => sum + point.mtht, 0);
+        const stakingTotal = staking.week.totalMtht;
         setStatus(
-          accountStatusFromTotals(business.summary.totalMtht, affiliateTotal)
+          accountStatusFromTotals(
+            business.summary.totalMtht,
+            affiliateTotal,
+            stakingTotal
+          )
         );
       } catch {
         if (signal?.cancelled) return;
